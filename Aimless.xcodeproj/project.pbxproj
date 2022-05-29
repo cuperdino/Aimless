@@ -44,6 +44,7 @@
 		9E11EB7D2843D053009DF884 /* AimlessUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AimlessUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E11EB812843D053009DF884 /* AimlessUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AimlessUITests.swift; sourceTree = "<group>"; };
 		9E11EB832843D053009DF884 /* AimlessUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AimlessUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		9E11EB912843D3A2009DF884 /* Packages */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Packages; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +75,7 @@
 		9E11EB5A2843D050009DF884 = {
 			isa = PBXGroup;
 			children = (
+				9E11EB912843D3A2009DF884 /* Packages */,
 				9E11EB652843D050009DF884 /* Aimless */,
 				9E11EB762843D053009DF884 /* AimlessTests */,
 				9E11EB802843D053009DF884 /* AimlessUITests */,
