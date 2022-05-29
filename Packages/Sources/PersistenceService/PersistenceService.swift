@@ -21,7 +21,7 @@ final class PersistenceService {
         })
     }
 
-    func saveTodo(id: Int, title: String, userId: Int, completed: Bool) throws {
+    func saveTodo(id: Int, title: String, userId: Int, completed: Bool) {
         let todo = Todo(context: container.viewContext)
         todo.id = Int64(id)
         todo.title = title

@@ -27,7 +27,7 @@ final class PersistenceServiceTests: XCTestCase {
         let initialCount = try context.count(for: request)
         XCTAssertEqual(initialCount, 0)
 
-        try persistenceService.saveTodo(
+        persistenceService.saveTodo(
             id: 1,
             title: "Something todo",
             userId: 1,
