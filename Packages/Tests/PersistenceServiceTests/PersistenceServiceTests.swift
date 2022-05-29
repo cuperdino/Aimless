@@ -38,4 +38,23 @@ final class PersistenceServiceTests: XCTestCase {
 
         XCTAssertEqual(finalCount, 1)
     }
+
+    func testSaveUser() throws {
+        let request = User.fetchRequest()
+        let context = persistenceService.container.viewContext
+
+        let initialCount = try context.count(for: request)
+        XCTAssertEqual(initialCount, 0)
+
+        persistenceService.saveUser(
+            id: 1,
+            name: "name",
+            username: "username",
+            email: "email@email.com"
+        )
+
+        let finalCount = try context.count(for: request)
+
+        XCTAssertEqual(finalCount, 1)
+    }
 }

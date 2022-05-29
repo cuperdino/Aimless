@@ -35,6 +35,21 @@ final class PersistenceService {
             print("Error", error)
         }
     }
+
+    func saveUser(id: Int, name: String, username: String, email: String) {
+        let user = User(context: container.viewContext)
+        user.id = Int64(id)
+        user.name = name
+        user.username = username
+        user.email = email
+
+        do {
+            try container.viewContext.save()
+            container.viewContext.rollback()
+        } catch {
+            print("Error", error)
+        }
+    }
 }
 
 public final class PersistenceContainer: NSPersistentContainer {
