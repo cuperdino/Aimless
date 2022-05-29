@@ -20,6 +20,21 @@ final class PersistenceService {
             }
         })
     }
+
+    func saveTodo(id: Int, title: String, userId: Int, completed: Bool) throws {
+        let todo = Todo(context: container.viewContext)
+        todo.id = Int64(id)
+        todo.title = title
+        todo.userId = Int64(userId)
+        todo.completed = completed
+
+        do {
+            try container.viewContext.save()
+            container.viewContext.rollback()
+        } catch {
+            print("Error", error)
+        }
+    }
 }
 
 public final class PersistenceContainer: NSPersistentContainer {
