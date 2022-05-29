@@ -11,6 +11,9 @@ let package = Package(
         .library(
             name: "ApiClient",
             targets: ["ApiClient"]),
+        .library(
+            name: "PersistenceService",
+            targets: ["PersistenceService"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -25,5 +28,13 @@ let package = Package(
         .testTarget(
             name: "ApiClientTests",
             dependencies: ["ApiClient"]),
+        .target(
+            name: "PersistenceService",
+            dependencies: [],
+            resources: [.process("Resources")]
+        ),
+        .testTarget(
+            name: "PersistenceServiceTests",
+            dependencies: ["PersistenceService"]),
     ]
 )
