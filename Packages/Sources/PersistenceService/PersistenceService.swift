@@ -30,8 +30,8 @@ final class PersistenceService {
 
         do {
             try container.viewContext.save()
-            container.viewContext.rollback()
         } catch {
+            container.viewContext.rollback()
             print("Error", error)
         }
     }
@@ -45,8 +45,8 @@ final class PersistenceService {
 
         do {
             try container.viewContext.save()
-            container.viewContext.rollback()
         } catch {
+            container.viewContext.rollback()
             print("Error", error)
         }
     }
