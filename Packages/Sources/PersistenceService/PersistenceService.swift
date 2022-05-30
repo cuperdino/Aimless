@@ -50,6 +50,16 @@ final class PersistenceService {
             print("Error", error)
         }
     }
+
+    func deleteUser(user: User) {
+        self.container.viewContext.delete(user)
+        do {
+            try container.viewContext.save()
+        } catch {
+            container.viewContext.rollback()
+            print("Error", error)
+        }
+    }
 }
 
 public final class PersistenceContainer: NSPersistentContainer {

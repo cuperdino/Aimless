@@ -57,4 +57,25 @@ final class PersistenceServiceTests: XCTestCase {
 
         XCTAssertEqual(finalCount, 1)
     }
+
+    func testDeleteUser() throws {
+        let request = User.fetchRequest()
+        let context = persistenceService.container.viewContext
+
+        persistenceService.saveUser(
+            id: 1,
+            name: "name",
+            username: "username",
+            email: "email@email.com"
+        )
+
+        let countBeforeDelete = try context.count(for: request)
+        XCTAssertEqual(countBeforeDelete, 1)
+
+        let user = try context.fetch(request).first!
+        persistenceService.deleteUser(user: user)
+
+        let countAfterDelete = try context.count(for: request)
+        XCTAssertEqual(countAfterDelete, 0)
+    }
 }
