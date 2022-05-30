@@ -8,7 +8,7 @@
 import Foundation
 import CoreData
 
-final class PersistenceService {
+class PersistenceService {
     let container: PersistenceContainer
 
     init(storeType: PersistenceContainer.StoreType = .persisted) {
@@ -19,6 +19,21 @@ final class PersistenceService {
                 fatalError("Core Data store failed to load with error: \(error)")
             }
         })
+    }
+
+    func save<T: NSManagedObject>(
+        _ entity: T.Type,
+        context: NSManagedObjectContext,
+        _ body: (inout T) -> Void
+    ) {
+        var entity = entity.init(context: context)
+        body(&entity)
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            print("Error", error)
+        }
     }
 
     func saveTodo(id: Int, title: String, userId: Int, completed: Bool) {
