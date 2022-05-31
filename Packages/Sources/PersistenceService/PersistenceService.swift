@@ -36,42 +36,12 @@ class PersistenceService {
         }
     }
 
-    func saveTodo(id: Int, title: String, userId: Int, completed: Bool) {
-        let todo = Todo(context: container.viewContext)
-        todo.id = Int64(id)
-        todo.title = title
-        todo.userId = Int64(userId)
-        todo.completed = completed
-
+    func delete<T: NSManagedObject>(entity: T, context: NSManagedObjectContext) {
+        context.delete(entity)
         do {
-            try container.viewContext.save()
+            try context.save()
         } catch {
-            container.viewContext.rollback()
-            print("Error", error)
-        }
-    }
-
-    func saveUser(id: Int, name: String, username: String, email: String) {
-        let user = User(context: container.viewContext)
-        user.id = Int64(id)
-        user.name = name
-        user.username = username
-        user.email = email
-
-        do {
-            try container.viewContext.save()
-        } catch {
-            container.viewContext.rollback()
-            print("Error", error)
-        }
-    }
-
-    func deleteUser(user: User) {
-        self.container.viewContext.delete(user)
-        do {
-            try container.viewContext.save()
-        } catch {
-            container.viewContext.rollback()
+            context.rollback()
             print("Error", error)
         }
     }

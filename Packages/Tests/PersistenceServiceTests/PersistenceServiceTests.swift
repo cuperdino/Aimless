@@ -39,60 +39,22 @@ final class PersistenceServiceTests: XCTestCase {
         XCTAssertEqual(finalCount, 1)
     }
 
-    func testSaveTodo() throws {
-        let request = Todo.fetchRequest()
-        let context = persistenceService.container.viewContext
-
-        let initialCount = try context.count(for: request)
-        XCTAssertEqual(initialCount, 0)
-
-        persistenceService.saveTodo(
-            id: 1,
-            title: "Something todo",
-            userId: 1,
-            completed: false
-        )
-
-        let finalCount = try context.count(for: request)
-
-        XCTAssertEqual(finalCount, 1)
-    }
-
-    func testSaveUser() throws {
+    func testDelete() throws {
         let request = User.fetchRequest()
         let context = persistenceService.container.viewContext
 
-        let initialCount = try context.count(for: request)
-        XCTAssertEqual(initialCount, 0)
-
-        persistenceService.saveUser(
-            id: 1,
-            name: "name",
-            username: "username",
-            email: "email@email.com"
-        )
-
-        let finalCount = try context.count(for: request)
-
-        XCTAssertEqual(finalCount, 1)
-    }
-
-    func testDeleteUser() throws {
-        let request = User.fetchRequest()
-        let context = persistenceService.container.viewContext
-
-        persistenceService.saveUser(
-            id: 1,
-            name: "name",
-            username: "username",
-            email: "email@email.com"
-        )
+        persistenceService.save(User.self, context: context) { user in
+            user.id = 1
+            user.name = "name"
+            user.username = "username"
+            user.email = "email@email.com"
+        }
 
         let countBeforeDelete = try context.count(for: request)
         XCTAssertEqual(countBeforeDelete, 1)
 
         let user = try context.fetch(request).first!
-        persistenceService.deleteUser(user: user)
+        persistenceService.delete(entity: user, context: context)
 
         let countAfterDelete = try context.count(for: request)
         XCTAssertEqual(countAfterDelete, 0)
