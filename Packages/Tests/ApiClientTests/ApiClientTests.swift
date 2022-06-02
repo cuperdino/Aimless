@@ -107,7 +107,7 @@ final class ApiClientTests: XCTestCase {
         let postTodoRequest = URLRequest.postTodos(todos: todos)
         let data = try JSONEncoder().encode(todos)
 
-        XCTAssertEqual(postTodoRequest.url, URL(string: "https://jsonplaceholder.typicode.com/users")!)
+        XCTAssertEqual(postTodoRequest.url, URL(string: "https://jsonplaceholder.typicode.com/todos")!)
         XCTAssertEqual(postTodoRequest.httpBody, data)
         XCTAssertEqual(postTodoRequest.httpMethod, HTTPMethod.post)
     }

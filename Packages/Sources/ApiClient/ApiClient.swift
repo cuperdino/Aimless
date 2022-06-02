@@ -75,7 +75,7 @@ extension URLRequest {
 
     // POST /todos
     static func postTodos(todos: [Todo]) -> URLRequest {
-        var request = URLRequest(url: baseUrL.appendingPathComponent("users"))
+        var request = URLRequest(url: baseUrL.appendingPathComponent("todos"))
         let body = try? JSONEncoder().encode(todos)
         request.httpBody = body
         request.httpMethod = HTTPMethod.post
