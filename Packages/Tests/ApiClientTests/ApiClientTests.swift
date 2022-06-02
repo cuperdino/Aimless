@@ -128,6 +128,30 @@ final class ApiClientTests: XCTestCase {
             throw error
         }
     }
+
+    // MARK: Real network calls
+    // Sanity checks towards API over real network.
+    // Used to verify that the local models actually
+    // matches the ones on server.  This is for
+    // development only, and should be commented out
+    
+    /*
+    func testGetResponseParsingOverRealNetwork() async throws {
+        let apiClient = ApiClient()
+        let todos: [Todo] = try await apiClient.send(request: .getTodos)
+        print(todos)
+    }
+
+    func testPostResponseParsingOverRealNetwork() async throws {
+        let apiClient = ApiClient()
+        let todosData = [
+            Todo(userId: 1, id: 1, title: "delectus aut autem", completed: false),
+            Todo(userId: 2, id: 2, title: "delectus aut autem", completed: true)
+        ]
+        let todosResponse: PostResponse<Todo> = try await apiClient.send(request: .postTodos(todos: todosData))
+        print(todosResponse)
+    }
+     */
 }
 
 // Extension found at:
