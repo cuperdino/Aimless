@@ -32,39 +32,26 @@ final class ApiClientTests: XCTestCase {
         }
     }
 
-    func testApiResponseMapping() async throws {
-        let userData = try JSONEncoder().encode([User(id: 1, name: "Bob", username: "bob", email: "bob@email.com")])
+    func testGetResponseParsing() async throws {
+        let string =
+        """
+            [
+                {
+                    "userId": 1,
+                    "id": 1,
+                    "title": "delectus aut autem",
+                    "completed": false
+                }
+            ]
+        """
+        let responseData = Data(string.utf8)
 
-        let testTransport = TestTransport(responseData: userData, urlResponse: .valid)
+        let testTransport = TestTransport(responseData: responseData, urlResponse: .valid)
         let apiClient = ApiClient(transport: testTransport)
 
-        let user: [User] = try await apiClient.send(request: .getUsers)
-        XCTAssertEqual(user.first!.name, "Bob")
-    }
-
-    func testGetUsersRequest() async throws {
-        XCTAssertEqual(URLRequest.getUsers.url, URL(string: "https://jsonplaceholder.typicode.com/users"))
-        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
-    }
-
-    func testGetTodosRequest() async throws {
-        XCTAssertEqual(URLRequest.getTodos.url, URL(string: "https://jsonplaceholder.typicode.com/todos"))
-        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
-    }
-
-    func testGetUserRequest() async throws {
-        XCTAssertEqual(URLRequest.getUser(id: 1).url, URL(string: "https://jsonplaceholder.typicode.com/users/1"))
-        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
-    }
-
-    func testPostUsersRequest() async throws {
-        let todos = [Todo(userId: 1, id: 1, title: "delectus aut autem", completed: false)]
-        let postTodoRequest = URLRequest.postTodos(todos: todos)
-        let data = try JSONEncoder().encode(todos)
-
-        XCTAssertEqual(postTodoRequest.url, URL(string: "https://jsonplaceholder.typicode.com/users")!)
-        XCTAssertEqual(postTodoRequest.httpBody, data)
-        XCTAssertEqual(postTodoRequest.httpMethod, HTTPMethod.post)
+        let todos: [Todo] = try await apiClient.send(request: .getTodos)
+        XCTAssertEqual(todos.first!.title, "delectus aut autem")
+        XCTAssertEqual(todos.count, 1)
     }
 
     func testPostResponseParsing() async throws {
@@ -98,6 +85,31 @@ final class ApiClientTests: XCTestCase {
         let todosResponse: PostResponse<Todo> = try await apiClient.send(request: .postTodos(todos: todos))
         XCTAssertEqual(todosResponse.modelArray.first!.title, "delectus aut autem")
         XCTAssertEqual(todosResponse.modelArray.count, 2)
+    }
+
+    func testGetUsersRequest() async throws {
+        XCTAssertEqual(URLRequest.getUsers.url, URL(string: "https://jsonplaceholder.typicode.com/users"))
+        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
+    }
+
+    func testGetTodosRequest() async throws {
+        XCTAssertEqual(URLRequest.getTodos.url, URL(string: "https://jsonplaceholder.typicode.com/todos"))
+        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
+    }
+
+    func testGetUserRequest() async throws {
+        XCTAssertEqual(URLRequest.getUser(id: 1).url, URL(string: "https://jsonplaceholder.typicode.com/users/1"))
+        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
+    }
+
+    func testPostUsersRequest() async throws {
+        let todos = [Todo(userId: 1, id: 1, title: "delectus aut autem", completed: false)]
+        let postTodoRequest = URLRequest.postTodos(todos: todos)
+        let data = try JSONEncoder().encode(todos)
+
+        XCTAssertEqual(postTodoRequest.url, URL(string: "https://jsonplaceholder.typicode.com/users")!)
+        XCTAssertEqual(postTodoRequest.httpBody, data)
+        XCTAssertEqual(postTodoRequest.httpMethod, HTTPMethod.post)
     }
 
     private func testApiError(withStatusCode statusCode: Int) async throws -> Data {
