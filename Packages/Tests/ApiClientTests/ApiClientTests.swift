@@ -33,7 +33,7 @@ final class ApiClientTests: XCTestCase {
     }
 
     func testApiResponseMapping() async throws {
-        let userData = try! JSONEncoder().encode([User(id: 1, name: "Bob", username: "bob", email: "bob@email.com")])
+        let userData = try JSONEncoder().encode([User(id: 1, name: "Bob", username: "bob", email: "bob@email.com")])
 
         let testTransport = TestTransport(responseData: userData, urlResponse: .valid)
         let apiClient = ApiClient(transport: testTransport)
@@ -58,13 +58,46 @@ final class ApiClientTests: XCTestCase {
     }
 
     func testPostUsersRequest() async throws {
-        let users = [User(id: 1, name: "Bob", username: "bob", email: "bob@email.com")]
-        let postUsersRequest = URLRequest.postUsers(users: users)
-        let data = try! JSONEncoder().encode([User(id: 1, name: "Bob", username: "bob", email: "bob@email.com")])
+        let todos = [Todo(userId: 1, id: 1, title: "delectus aut autem", completed: false)]
+        let postTodoRequest = URLRequest.postTodos(todos: todos)
+        let data = try JSONEncoder().encode(todos)
 
-        XCTAssertEqual(postUsersRequest.url, URL(string: "https://jsonplaceholder.typicode.com/users")!)
-        XCTAssertEqual(postUsersRequest.httpBody, data)
-        XCTAssertEqual(postUsersRequest.httpMethod, HTTPMethod.post)
+        XCTAssertEqual(postTodoRequest.url, URL(string: "https://jsonplaceholder.typicode.com/users")!)
+        XCTAssertEqual(postTodoRequest.httpBody, data)
+        XCTAssertEqual(postTodoRequest.httpMethod, HTTPMethod.post)
+    }
+
+    func testPostResponseParsing() async throws {
+        let string =
+        """
+        {
+            "0": {
+                "userId": 1,
+                "id": 1,
+                "title": "delectus aut autem",
+                "completed": false
+            },
+            "1": {
+                "userId": 2,
+                "id": 2,
+                "title": "delectus aut autem",
+                "completed": true
+            },
+            "id": 201
+        }
+        """
+        let responseData = Data(string.utf8)
+
+        let testTransport = TestTransport(responseData: responseData, urlResponse: .valid)
+        let apiClient = ApiClient(transport: testTransport)
+
+        let todos = [
+            Todo(userId: 1, id: 1, title: "delectus aut autem", completed: false),
+            Todo(userId: 2, id: 2, title: "delectus aut autem", completed: true)
+        ]
+        let todosResponse: PostResponse<Todo> = try await apiClient.send(request: .postTodos(todos: todos))
+        XCTAssertEqual(todosResponse.modelArray.first!.title, "delectus aut autem")
+        XCTAssertEqual(todosResponse.modelArray.count, 2)
     }
 
     private func testApiError(withStatusCode statusCode: Int) async throws -> Data {

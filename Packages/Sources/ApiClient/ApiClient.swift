@@ -73,10 +73,10 @@ extension URLRequest {
         return request
     }
 
-    // POST /users
-    static func postUsers(users: [User]) -> URLRequest {
+    // POST /todos
+    static func postTodos(todos: [Todo]) -> URLRequest {
         var request = URLRequest(url: baseUrL.appendingPathComponent("users"))
-        let body = try? JSONEncoder().encode(users)
+        let body = try? JSONEncoder().encode(todos)
         request.httpBody = body
         request.httpMethod = HTTPMethod.post
         return request
@@ -103,6 +103,35 @@ struct Todo: Codable {
     let id: Int
     let title: String
     let completed: Bool
+}
+
+struct PostResponse<Model: Codable>: Codable {
+    let modelArray: [Model]
+
+    private struct DynamicCodingKeys: CodingKey {
+        var stringValue: String
+        init?(stringValue: String) {
+            self.stringValue = stringValue
+        }
+        var intValue: Int?
+        init?(intValue: Int) {
+            return nil
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DynamicCodingKeys.self)
+        var tempArray = [Model]()
+        for key in container.allKeys {
+            guard key.stringValue != "id" else { continue }
+            let decodedObject = try container.decode(
+                Model.self,
+                forKey: DynamicCodingKeys(stringValue: key.stringValue)!
+            )
+            tempArray.append(decodedObject)
+        }
+        modelArray = tempArray
+    }
 }
 
 struct User: Codable {
