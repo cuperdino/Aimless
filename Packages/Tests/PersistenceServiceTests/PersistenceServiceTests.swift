@@ -21,13 +21,13 @@ final class PersistenceServiceTests: XCTestCase {
     }
 
     func testSave() throws {
-        let request = User.fetchRequest()
+        let request = UserEntity.fetchRequest()
         let context = persistenceService.container.viewContext
 
         let initialCount = try context.count(for: request)
         XCTAssertEqual(initialCount, 0)
 
-        persistenceService.save(User.self, context: context) { user in
+        persistenceService.save(UserEntity.self, context: context) { user in
             user.id = 1
             user.name = "name"
             user.username = "username"
@@ -40,10 +40,10 @@ final class PersistenceServiceTests: XCTestCase {
     }
 
     func testDelete() throws {
-        let request = User.fetchRequest()
+        let request = UserEntity.fetchRequest()
         let context = persistenceService.container.viewContext
 
-        persistenceService.save(User.self, context: context) { user in
+        persistenceService.save(UserEntity.self, context: context) { user in
             user.id = 1
             user.name = "name"
             user.username = "username"
