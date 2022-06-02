@@ -10,7 +10,7 @@ public protocol Transport {
 
 // Check for a couple of
 // standard errors
-enum ApiError: Error, Equatable {
+enum ApiError: Error {
     case interalServerError
     case notFound
     case other(String)
