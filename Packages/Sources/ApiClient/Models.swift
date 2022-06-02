@@ -36,15 +36,14 @@ public struct PostResponse<Model: Codable>: Codable {
         }
     }
 
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: DynamicCodingKeys.self)
         var tempArray = [Model]()
         for key in container.allKeys {
-            guard key.stringValue != "id" else { continue }
-            let decodedObject = try container.decode(
-                Model.self,
-                forKey: DynamicCodingKeys(stringValue: key.stringValue)!
-            )
+            guard let decodedObject = try? container.decode(Model.self, forKey: DynamicCodingKeys(stringValue: key.stringValue)!
+            ) else {
+                continue
+            }
             tempArray.append(decodedObject)
         }
         modelArray = tempArray
