@@ -52,7 +52,7 @@ class ApiClient {
         self.transport = transport
     }
 
-    func send<T: Codable>(request: URLRequest) async throws -> T {
+    func send<T: Decodable>(request: URLRequest) async throws -> T {
         let data = try await transport.send(request: request)
         return try JSONDecoder().decode(T.self, from: data)
     }

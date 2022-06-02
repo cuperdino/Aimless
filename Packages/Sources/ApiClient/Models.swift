@@ -22,7 +22,7 @@ public struct User: Codable {
 }
 
 // Custom decoding for post response
-public struct PostResponse<Model: Codable>: Codable {
+public struct PostResponse<Model: Decodable>: Decodable {
     let modelArray: [Model]
 
     private struct DynamicCodingKeys: CodingKey {
@@ -40,8 +40,7 @@ public struct PostResponse<Model: Codable>: Codable {
         let container = try decoder.container(keyedBy: DynamicCodingKeys.self)
         var tempArray = [Model]()
         for key in container.allKeys {
-            guard let decodedObject = try? container.decode(Model.self, forKey: DynamicCodingKeys(stringValue: key.stringValue)!
-            ) else {
+            guard let decodedObject = try? container.decode(Model.self, forKey: key) else {
                 continue
             }
             tempArray.append(decodedObject)
