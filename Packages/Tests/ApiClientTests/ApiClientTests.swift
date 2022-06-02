@@ -32,6 +32,41 @@ final class ApiClientTests: XCTestCase {
         }
     }
 
+    func testApiResponseMapping() async throws {
+        let userData = try! JSONEncoder().encode([User(id: 1, name: "Bob", username: "bob", email: "bob@email.com")])
+
+        let testTransport = TestTransport(responseData: userData, urlResponse: .valid)
+        let apiClient = ApiClient(transport: testTransport)
+
+        let user: [User] = try await apiClient.send(request: .getUsers)
+        XCTAssertEqual(user.first!.name, "Bob")
+    }
+
+    func testGetUsersRequest() async throws {
+        XCTAssertEqual(URLRequest.getUsers.url, URL(string: "https://jsonplaceholder.typicode.com/users"))
+        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
+    }
+
+    func testGetTodosRequest() async throws {
+        XCTAssertEqual(URLRequest.getTodos.url, URL(string: "https://jsonplaceholder.typicode.com/todos"))
+        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
+    }
+
+    func testGetUserRequest() async throws {
+        XCTAssertEqual(URLRequest.getUser(id: 1).url, URL(string: "https://jsonplaceholder.typicode.com/users/1"))
+        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
+    }
+
+    func testPostUsersRequest() async throws {
+        let users = [User(id: 1, name: "Bob", username: "bob", email: "bob@email.com")]
+        let postUsersRequest = URLRequest.postUsers(users: users)
+        let data = try! JSONEncoder().encode([User(id: 1, name: "Bob", username: "bob", email: "bob@email.com")])
+
+        XCTAssertEqual(postUsersRequest.url, URL(string: "https://jsonplaceholder.typicode.com/users")!)
+        XCTAssertEqual(postUsersRequest.httpBody, data)
+        XCTAssertEqual(postUsersRequest.httpMethod, HTTPMethod.post)
+    }
+
     private func testApiError(withStatusCode statusCode: Int) async throws -> Data {
         let request = URLRequest(url: URL(string: "testurl.com")!)
         let urlResponse = HTTPURLResponse(
@@ -41,8 +76,9 @@ final class ApiClientTests: XCTestCase {
             headerFields: nil
         )
         let testTransport = TestTransport(responseData: Data(), urlResponse: urlResponse!)
+        let apiClient = ApiClient(transport: testTransport)
         do {
-            return try await testTransport.send(request: request)
+            return try await apiClient.send(request: request)
         } catch {
             throw error
         }

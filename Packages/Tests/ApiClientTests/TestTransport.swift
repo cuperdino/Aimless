@@ -8,6 +8,13 @@
 import Foundation
 import ApiClient
 
+extension URLResponse {
+    static var valid: HTTPURLResponse {
+        let url = URL(string: "some.com")!
+        return HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+    }
+}
+
 class TestTransport: Transport {
 
     let responseData: Data

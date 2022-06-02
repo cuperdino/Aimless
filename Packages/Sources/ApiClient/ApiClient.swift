@@ -58,6 +58,43 @@ class ApiClient {
     }
 }
 
+public struct HTTPMethod {
+    static let get = "GET"
+    static let post = "POST"
+}
+
+extension URLRequest {
+    private static var baseUrL = URL(string: "https://jsonplaceholder.typicode.com")!
+
+    // GET /users
+    static var getUsers: URLRequest {
+        var request = URLRequest(url: baseUrL.appendingPathComponent("users"))
+        request.httpMethod = HTTPMethod.get
+        return request
+    }
+
+    // POST /users
+    static func postUsers(users: [User]) -> URLRequest {
+        var request = URLRequest(url: baseUrL.appendingPathComponent("users"))
+        let body = try? JSONEncoder().encode(users)
+        request.httpBody = body
+        request.httpMethod = HTTPMethod.post
+        return request
+    }
+
+    // GET /user/{id}
+    static func getUser(id: Int) -> URLRequest {
+        let user = baseUrL.appendingPathComponent("users").appendingPathComponent("\(id)")
+        var request = URLRequest(url: user)
+        request.httpMethod = HTTPMethod.get
+        return request
+    }
+
+    // GET /todos
+    static var getTodos: URLRequest {
+        var request = URLRequest(url: baseUrL.appendingPathComponent("todos"))
+        request.httpMethod = HTTPMethod.get
+        return request
     }
 }
 
