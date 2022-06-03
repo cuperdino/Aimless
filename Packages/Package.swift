@@ -49,7 +49,14 @@ let package = Package(
         .testTarget(
             name: "SynchronizationServiceTests",
             dependencies: ["SynchronizationService"]),
-        .target(name: "DataImporterService"),
+        .target(
+            name: "DataImporterService",
+            dependencies: [
+                "Models",
+                "PersistenceService",
+                "ApiClient"
+            ]
+        ),
         .testTarget(
             name: "DataImporterServiceTests",
             dependencies: ["DataImporterService"]),
