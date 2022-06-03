@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="TodoEntity" representedClassName="TodoEntity" syncable="YES" codeGenerationType="class">
+    <entity name="TodoEntity" representedClassName="TodoEntity" syncable="YES">
         <attribute name="completed" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="synchronized" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="title" attributeType="String"/>
+        <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="userId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="todos" inverseEntity="UserEntity"/>
     </entity>
-    <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="class">
+    <entity name="UserEntity" representedClassName="UserEntity" syncable="YES">
         <attribute name="email" attributeType="String"/>
         <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" attributeType="String"/>
         <attribute name="username" attributeType="String"/>
+        <relationship name="todos" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TodoEntity" inverseName="user" inverseEntity="TodoEntity"/>
     </entity>
     <elements>
-        <element name="TodoEntity" positionX="-45" positionY="0" width="128" height="89"/>
-        <element name="UserEntity" positionX="-18" positionY="54" width="128" height="89"/>
+        <element name="TodoEntity" positionX="-45" positionY="0" width="128" height="134"/>
+        <element name="UserEntity" positionX="-18" positionY="54" width="128" height="104"/>
     </elements>
 </model>
