@@ -46,14 +46,14 @@ extension URLSession: Transport {
     }
 }
 
-class ApiClient {
+public class ApiClient {
     let transport: Transport
 
     init(transport: Transport = URLSession.shared) {
         self.transport = transport
     }
 
-    func send<T: Decodable>(request: URLRequest) async throws -> T {
+    public func send<T: Decodable>(request: URLRequest) async throws -> T {
         let data = try await transport.send(request: request)
         return try JSONDecoder().decode(T.self, from: data)
     }
@@ -68,14 +68,14 @@ extension URLRequest {
     private static var baseUrL = URL(string: "https://jsonplaceholder.typicode.com")!
 
     // GET /users
-    static var getUsers: URLRequest {
+    public static var getUsers: URLRequest {
         var request = URLRequest(url: baseUrL.appendingPathComponent("users"))
         request.httpMethod = HTTPMethod.get
         return request
     }
 
     // POST /todos
-    static func postTodos(todos: [Todo]) -> URLRequest {
+    public static func postTodos(todos: [Todo]) -> URLRequest {
         var request = URLRequest(url: baseUrL.appendingPathComponent("todos"))
         let body = try? JSONEncoder().encode(todos)
         request.httpBody = body
@@ -84,7 +84,7 @@ extension URLRequest {
     }
 
     // GET /user/{id}
-    static func getUser(id: Int) -> URLRequest {
+    public static func getUser(id: Int) -> URLRequest {
         let user = baseUrL.appendingPathComponent("users").appendingPathComponent("\(id)")
         var request = URLRequest(url: user)
         request.httpMethod = HTTPMethod.get
@@ -92,7 +92,7 @@ extension URLRequest {
     }
 
     // GET /todos
-    static var getTodos: URLRequest {
+    public static var getTodos: URLRequest {
         var request = URLRequest(url: baseUrL.appendingPathComponent("todos"))
         request.httpMethod = HTTPMethod.get
         return request

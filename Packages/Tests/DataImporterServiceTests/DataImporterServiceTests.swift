@@ -6,23 +6,51 @@
 //
 
 import XCTest
+@testable import DataImporterService
+@testable import ApiClient
+@testable import PersistenceService
+@testable import Models
 
 class DataImporterServiceTests: XCTestCase {
 
+    var apiClient: ApiClient!
+    var persistenceService: PersistenceService!
+    var dataImporterService: DataImporterService!
+
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        let responseData = try JSONEncoder().encode([
+            Todo(userId: 1, id: 1, title: "First title", completed: false),
+            Todo(userId: 2, id: 2, title: "Second title", completed: true),
+            Todo(userId: 3, id: 3, title: "Third title", completed: false),
+            Todo(userId: 4, id: 4, title: "Fourth title", completed: true)
+        ])
+
+        let testTransport = TestTransport(responseData: responseData, urlResponse: .valid)
+
+        self.apiClient = ApiClient(transport: testTransport)
+        self.persistenceService = PersistenceService(storeType: .inMemory)
+        self.dataImporterService = DataImporterService(
+            apiClient: apiClient,
+            persistenceService: persistenceService
+        )
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        apiClient = nil
+        persistenceService = nil
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    func testExample() async throws {
+        try await self.dataImporterService.importTodos()
+        let context = persistenceService.viewContext
+        let fetchRequest = TodoEntity.fetchRequest()
+
+        try await context.perform {
+            let count = try context.count(for: fetchRequest)
+            XCTAssertEqual(count, 4)
+            let todo = try context.fetch(fetchRequest).first!
+            todo.id = 1
+        }
     }
 
     func testPerformanceExample() throws {

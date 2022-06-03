@@ -16,9 +16,9 @@ public class TodoEntity: NSManagedObject {
     }
 
     @NSManaged public var completed: Bool
-    @NSManaged public var id: Int64
+    @NSManaged public var id: Int
     @NSManaged public var title: String?
-    @NSManaged public var userId: Int64
+    @NSManaged public var userId: Int
     @NSManaged public var user: UserEntity?
     @NSManaged public var synchronized: Int
     @NSManaged public var updatedAt: Date
@@ -30,6 +30,23 @@ public class TodoEntity: NSManagedObject {
 
         set {
             synchronized = newValue.rawValue
+        }
+    }
+
+    public static func findOrInsert(id: Int, in context: NSManagedObjectContext) -> TodoEntity {
+        let request = TodoEntity.fetchRequest()
+
+        request.predicate = NSPredicate(
+            format: "%K == %d",
+            #keyPath(TodoEntity.id),
+            id
+        )
+
+        if let todo = try? context.fetch(request).first {
+            return todo
+        } else {
+            let todo = TodoEntity(context: context)
+            return todo
         }
     }
 }

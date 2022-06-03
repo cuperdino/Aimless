@@ -8,12 +8,12 @@
 import Foundation
 import CoreData
 
-class PersistenceService {
-    let container: PersistenceContainer
-    let backgroundContext: NSManagedObjectContext
-    let viewContext: NSManagedObjectContext
+public class PersistenceService {
+    public let container: PersistenceContainer
+    public let backgroundContext: NSManagedObjectContext
+    public let viewContext: NSManagedObjectContext
 
-    init(storeType: PersistenceContainer.StoreType = .persisted) {
+    public init(storeType: PersistenceContainer.StoreType = .persisted) {
         container = PersistenceContainer(name: "Model", storeType: storeType)
 
         container.loadPersistentStores(completionHandler: { description, error in
