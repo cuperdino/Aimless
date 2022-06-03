@@ -70,12 +70,12 @@ final class PersistenceServiceTests: XCTestCase {
 
     func testSave() async throws {
         let todoRequest = TodoEntity.fetchRequest()
-        let viewContext = persistenceService.container.viewContext
-        let todoInitialCount = try viewContext.count(for: todoRequest)
+        let viewContext = persistenceService.viewContext
 
-        XCTAssertEqual(todoInitialCount, 0)
+        try await viewContext.perform {
+            let todoInitialCount = try viewContext.count(for: todoRequest)
+            XCTAssertEqual(todoInitialCount, 0)
 
-        await viewContext.perform {
             _ = viewContext.save(TodoEntity.self) { todo in
                 todo.id = 1
                 todo.title = "A title"
@@ -84,18 +84,17 @@ final class PersistenceServiceTests: XCTestCase {
                 todo.synchronizationState = .notSynchronized
                 todo.updatedAt = Date()
             }
+            let todoFinalCount = try viewContext.count(for: todoRequest)
+            XCTAssertEqual(todoFinalCount, 1)
         }
-
-        let todoFinalCount = try viewContext.count(for: todoRequest)
-        XCTAssertEqual(todoFinalCount, 1)
     }
 
     func testSaveWithRelationShips() async throws {
         let todoRequest = TodoEntity.fetchRequest()
         let userRequest = UserEntity.fetchRequest()
-        let viewContext = persistenceService.container.viewContext
+        let viewContext = persistenceService.viewContext
 
-        await viewContext.perform {
+        try await viewContext.perform {
             let todo = viewContext.save(TodoEntity.self) { todo in
                 todo.id = 1
                 todo.title = "A title"
@@ -113,19 +112,19 @@ final class PersistenceServiceTests: XCTestCase {
                 user.username = "cuperdino"
                 user.addToTodos(todo)
             }
+
+            let todoToAssert = try viewContext.fetch(todoRequest).first!
+            let user = try viewContext.fetch(userRequest).first!
+            let userTodo = user.todos?.allObjects.first as? TodoEntity
+
+            XCTAssertEqual(todoToAssert.user, user)
+            XCTAssertEqual(userTodo, todo)
         }
-
-        let todo = try viewContext.fetch(todoRequest).first!
-        let user = try viewContext.fetch(userRequest).first!
-        let userTodo = user.todos?.allObjects.first as? TodoEntity
-
-        XCTAssertEqual(todo.user, user)
-        XCTAssertEqual(userTodo, todo)
     }
 
     func testDelete() async throws {
         let request = UserEntity.fetchRequest()
-        let context = persistenceService.container.viewContext
+        let context = persistenceService.viewContext
 
         await context.perform {
             _ = context.save(UserEntity.self) { user in
@@ -136,13 +135,15 @@ final class PersistenceServiceTests: XCTestCase {
             }
         }
 
-        let countBeforeDelete = try context.count(for: request)
-        XCTAssertEqual(countBeforeDelete, 1)
+        try await context.perform {
+            let countBeforeDelete = try context.count(for: request)
+            XCTAssertEqual(countBeforeDelete, 1)
 
-        let user = try context.fetch(request).first!
-        context.delete(entity: user)
+            let user = try context.fetch(request).first!
+            context.delete(entity: user)
 
-        let countAfterDelete = try context.count(for: request)
-        XCTAssertEqual(countAfterDelete, 0)
+            let countAfterDelete = try context.count(for: request)
+            XCTAssertEqual(countAfterDelete, 0)
+        }
     }
 }
