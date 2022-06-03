@@ -10,6 +10,8 @@ import CoreData
 
 class PersistenceService {
     let container: PersistenceContainer
+    let backgroundContext: NSManagedObjectContext
+    let viewContext: NSManagedObjectContext
 
     init(storeType: PersistenceContainer.StoreType = .persisted) {
         container = PersistenceContainer(name: "Model", storeType: storeType)
@@ -19,6 +21,9 @@ class PersistenceService {
                 fatalError("Core Data store failed to load with error: \(error)")
             }
         })
+
+        self.viewContext = container.viewContext
+        self.backgroundContext = container.newBackgroundContext()
     }
 }
 
