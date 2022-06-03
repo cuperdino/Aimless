@@ -7,6 +7,7 @@
 
 import XCTest
 @testable import PersistenceService
+import CoreData
 
 final class PersistenceServiceTests: XCTestCase {
 
@@ -18,6 +19,52 @@ final class PersistenceServiceTests: XCTestCase {
 
     override func tearDown() {
         persistenceService = nil
+    }
+
+    func testTodoEntity() {
+        let todoEntity = persistenceService.container.managedObjectModel.entitiesByName["TodoEntity"]!
+        verifyAttribute(named: "title", on: todoEntity, hasType: .string)
+        verifyAttribute(named: "id", on: todoEntity, hasType: .integer64)
+        verifyAttribute(named: "title", on: todoEntity, hasType: .string)
+        verifyAttribute(named: "userId", on: todoEntity, hasType: .integer64)
+        verifyAttribute(named: "synchronized", on: todoEntity, hasType: .integer64)
+        verifyAttribute(named: "updatedAt", on: todoEntity, hasType: .date)
+
+        guard let userRelationship = todoEntity.relationshipsByName["user"] else {
+            XCTFail("TodoEntity is missing expected relationship 'user'")
+            return
+        }
+        XCTAssertFalse(userRelationship.isToMany)
+        let userEntity = persistenceService.container.managedObjectModel.entitiesByName["UserEntity"]!
+        XCTAssertEqual(userEntity, userRelationship.destinationEntity)
+    }
+
+    func testUserEntity() {
+        let userEntity = persistenceService.container.managedObjectModel.entitiesByName["UserEntity"]!
+        verifyAttribute(named: "email", on: userEntity, hasType: .string)
+        verifyAttribute(named: "id", on: userEntity, hasType: .integer64)
+        verifyAttribute(named: "name", on: userEntity, hasType: .string)
+        verifyAttribute(named: "username", on: userEntity, hasType: .string)
+
+        guard let todoRelationShip = userEntity.relationshipsByName["todos"] else {
+            XCTFail("UserEntity is missing expected relationship 'todos'")
+            return
+        }
+        XCTAssertTrue(todoRelationShip.isToMany)
+        let todoEntity = persistenceService.container.managedObjectModel.entitiesByName["TodoEntity"]!
+        XCTAssertEqual(todoEntity, todoRelationShip.destinationEntity)
+    }
+
+    func verifyAttribute(
+        named name: String,
+        on entity: NSEntityDescription,
+        hasType type: NSAttributeDescription.AttributeType
+    ) {
+        guard let attribute = entity.attributesByName[name] else {
+            XCTFail("\(entity.name!) is missing expected attribute \(name)")
+            return
+        }
+        XCTAssertEqual(type, attribute.type)
     }
 
     func testSave() async throws {
