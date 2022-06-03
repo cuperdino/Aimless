@@ -21,27 +21,33 @@ class PersistenceService {
         })
     }
 
+
+}
+
+extension NSManagedObjectContext {
+    @discardableResult
     func save<T: NSManagedObject>(
         _ entity: T.Type,
-        context: NSManagedObjectContext,
         _ body: (inout T) -> Void
-    ) {
-        var entity = entity.init(context: context)
+    ) -> T? {
+        var entity = entity.init(context: self)
         body(&entity)
         do {
-            try context.save()
+            try self.save()
+            return entity
         } catch {
-            context.rollback()
+            self.rollback()
             print("Error", error)
+            return nil
         }
     }
 
-    func delete<T: NSManagedObject>(entity: T, context: NSManagedObjectContext) {
-        context.delete(entity)
+    func delete<T: NSManagedObject>(entity: T) {
+        self.delete(entity)
         do {
-            try context.save()
+            try self.save()
         } catch {
-            context.rollback()
+            self.rollback()
             print("Error", error)
         }
     }
