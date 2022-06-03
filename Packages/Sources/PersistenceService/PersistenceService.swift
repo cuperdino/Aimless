@@ -20,8 +20,6 @@ class PersistenceService {
             }
         })
     }
-
-
 }
 
 extension NSManagedObjectContext {
