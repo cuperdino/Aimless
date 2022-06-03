@@ -15,6 +15,9 @@ let package = Package(
             name: "PersistenceService",
             targets: ["PersistenceService"]),
         .library(
+            name: "SynchronizationService",
+            targets: ["SynchronizationService"]),
+        .library(
             name: "Models",
             targets: ["Models"]),
     ],
@@ -39,9 +42,13 @@ let package = Package(
         .testTarget(
             name: "PersistenceServiceTests",
             dependencies: ["PersistenceService"]),
+        .target(name: "SynchronizationService"),
+        .testTarget(
+            name: "SynchronizationServiceTests",
+            dependencies: ["SynchronizationService"]),
         .target(
             name: "Models",
             dependencies: []
-        )
+        ),
     ]
 )
