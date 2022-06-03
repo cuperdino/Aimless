@@ -1,29 +1,14 @@
 //
-//  Models.swift
+//  PostArrayResponse.swift
 //  
 //
-//  Created by Sabahudin Kodro on 02/06/2022.
+//  Created by Sabahudin Kodro on 03/06/2022.
 //
 
 import Foundation
 
-public struct Todo: Codable {
-    let userId: Int
-    let id: Int
-    let title: String
-    let completed: Bool
-}
-
-public struct User: Codable {
-    let id: Int
-    let name: String
-    let username: String
-    let email: String
-}
-
-// Custom decoding for post response
-public struct PostResponse<Model: Decodable>: Decodable {
-    let modelArray: [Model]
+public struct PostArrayResponse<Model: Decodable>: Decodable {
+    public let modelArray: [Model]
 
     private struct DynamicCodingKeys: CodingKey {
         var stringValue: String

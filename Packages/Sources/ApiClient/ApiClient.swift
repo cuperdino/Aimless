@@ -1,4 +1,5 @@
 import Foundation
+import Models
 
 // Transport maps a URLRequest to Data.
 // Makes it easily extendable and testable.

@@ -1,5 +1,6 @@
 import XCTest
 @testable import ApiClient
+@testable import Models
 
 final class ApiClientTests: XCTestCase {
 
@@ -54,7 +55,7 @@ final class ApiClientTests: XCTestCase {
         XCTAssertEqual(todos.count, 1)
     }
 
-    func testPostResponseParsing() async throws {
+    func testPostArrayResponseParsing() async throws {
         let string =
         """
         {
@@ -82,7 +83,7 @@ final class ApiClientTests: XCTestCase {
             Todo(userId: 1, id: 1, title: "delectus aut autem", completed: false),
             Todo(userId: 2, id: 2, title: "delectus aut autem", completed: true)
         ]
-        let todosResponse: PostResponse<Todo> = try await apiClient.send(request: .postTodos(todos: todos))
+        let todosResponse: PostArrayResponse<Todo> = try await apiClient.send(request: .postTodos(todos: todos))
         XCTAssertEqual(todosResponse.modelArray.first!.title, "delectus aut autem")
         XCTAssertEqual(todosResponse.modelArray.count, 2)
     }
@@ -142,13 +143,13 @@ final class ApiClientTests: XCTestCase {
         print(todos)
     }
 
-    func testPostResponseParsingOverRealNetwork() async throws {
+    func testPostArrayResponseParsingOverRealNetwork() async throws {
         let apiClient = ApiClient()
         let todosData = [
             Todo(userId: 1, id: 1, title: "delectus aut autem", completed: false),
             Todo(userId: 2, id: 2, title: "delectus aut autem", completed: true)
         ]
-        let todosResponse: PostResponse<Todo> = try await apiClient.send(request: .postTodos(todos: todosData))
+        let todosResponse: PostArrayResponse<Todo> = try await apiClient.send(request: .postTodos(todos: todosData))
         print(todosResponse)
     }
      */

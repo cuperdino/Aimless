@@ -7,6 +7,7 @@
 
 import XCTest
 @testable import PersistenceService
+import Models
 import CoreData
 
 final class PersistenceServiceTests: XCTestCase {
