@@ -18,6 +18,9 @@ let package = Package(
             name: "SynchronizationService",
             targets: ["SynchronizationService"]),
         .library(
+            name: "DataImporterService",
+            targets: ["DataImporterService"]),
+        .library(
             name: "Models",
             targets: ["Models"]),
     ],
@@ -46,6 +49,10 @@ let package = Package(
         .testTarget(
             name: "SynchronizationServiceTests",
             dependencies: ["SynchronizationService"]),
+        .target(name: "DataImporterService"),
+        .testTarget(
+            name: "DataImporterServiceTests",
+            dependencies: ["DataImporterService"]),
         .target(
             name: "Models",
             dependencies: []
