@@ -40,8 +40,8 @@ class DataImporterServiceTests: XCTestCase {
         persistenceService = nil
     }
 
-    func testExample() async throws {
-        try await self.dataImporterService.importTodos()
+    func testImportTodosFromRemote() async throws {
+        try await self.dataImporterService.importTodosFromRemote()
         let context = persistenceService.viewContext
         let fetchRequest = TodoEntity.fetchRequest()
 
@@ -52,12 +52,4 @@ class DataImporterServiceTests: XCTestCase {
             todo.id = 1
         }
     }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-
 }
