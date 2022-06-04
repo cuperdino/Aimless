@@ -11,7 +11,7 @@ import Models
 import ApiClient
 import PersistenceService
 
-class DataImporterService {
+public class DataImporterService {
 
     let apiClient: ApiClient
     let persistenceService: PersistenceService
@@ -21,7 +21,7 @@ class DataImporterService {
         self.persistenceService = persistenceService
     }
 
-    func importTodosFromRemote() async throws {
+    public func importTodosFromRemote() async throws {
         let todos: [Todo] = try await apiClient.send(request: .getTodos)
         let backgroundContext = persistenceService.backgroundContext
 

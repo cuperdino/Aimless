@@ -6,7 +6,19 @@
 //
 
 import Foundation
+import ApiClient
+import DataImporterService
 
 class SynchronizationService {
 
+    let dataImporter: DataImporterService
+    let apiClient: ApiClient
+
+    init(dataImporter: DataImporterService, apiClient: ApiClient) {
+        self.dataImporter = dataImporter
+        self.apiClient = apiClient
+    }
+
+    func performSynchronization() async throws {
+    }
 }
