@@ -36,11 +36,10 @@ extension NSManagedObjectContext {
         var entity = entity.init(context: self)
         body(&entity)
         do {
-            try self.save()
+            try self.saveWithRollback()
             return entity
         } catch {
-            self.rollback()
-            print("Error", error)
+            print(error)
             return nil
         }
     }
@@ -48,10 +47,18 @@ extension NSManagedObjectContext {
     func delete<T: NSManagedObject>(entity: T) {
         self.delete(entity)
         do {
+            try self.saveWithRollback()
+        } catch {
+            print(error)
+        }
+    }
+
+    func saveWithRollback() throws {
+        do {
             try self.save()
         } catch {
             self.rollback()
-            print("Error", error)
+            throw error
         }
     }
 }

@@ -146,4 +146,25 @@ final class PersistenceServiceTests: XCTestCase {
             XCTAssertEqual(countAfterDelete, 0)
         }
     }
+
+    func testSaveWithRollback() async throws {
+        let context = persistenceService.viewContext
+        await context.perform {
+            let todo1 = TodoEntity(context: context)
+            todo1.title = ""
+            // Perform a save without assigning non-optional values
+            try? context.save()
+            // As we have not rolled back, there are items
+            // in the insertedObjects of the context
+            XCTAssertFalse(context.insertedObjects.isEmpty)
+
+            let todo2 = TodoEntity(context: context)
+            todo2.title = ""
+            // Perform a save without assigning non-optional values
+            try? context.saveWithRollback()
+            // As we have rolled back, there should not be
+            // any elements in the insertedObjects of the context
+            XCTAssertTrue(context.insertedObjects.isEmpty)
+        }
+    }
 }
