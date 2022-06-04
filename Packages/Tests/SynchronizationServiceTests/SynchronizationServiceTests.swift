@@ -38,6 +38,8 @@ class SynchronizationServiceTests: XCTestCase {
     override func tearDownWithError() throws {
         self.dataImporter = nil
         self.apiClient = nil
+        self.persistenceService = nil
+        self.synchronizationService = nil
     }
 
     func testPerformSynchronization() async throws {
