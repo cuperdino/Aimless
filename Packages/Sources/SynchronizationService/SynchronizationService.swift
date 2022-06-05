@@ -11,17 +11,17 @@ import Models
 import CoreData
 import PersistenceService
 
-class SynchronizationService {
+public class SynchronizationService {
 
-    let apiClient: ApiClient
-    let persistenceService: PersistenceService
+    private let apiClient: ApiClient
+    private let persistenceService: PersistenceService
 
-    init(apiClient: ApiClient, persistenceService: PersistenceService) {
+    public init(apiClient: ApiClient, persistenceService: PersistenceService) {
         self.apiClient = apiClient
         self.persistenceService = persistenceService
     }
 
-    func performSynchronization(context: NSManagedObjectContext) async throws {
+    public func performSynchronization(context: NSManagedObjectContext) async throws {
         let unsyncedTodos: [TodoEntity] = try await context.perform {
             try context.fetchUnscynedTodos()
         }
