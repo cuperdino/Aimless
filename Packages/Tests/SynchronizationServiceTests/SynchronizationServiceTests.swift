@@ -30,9 +30,8 @@ class SynchronizationServiceTests: XCTestCase {
     func testFetchUnsyncedTodos() async throws {
         let context = persistenceService.backgroundContext
 
-        let unsyncedTodos = try await context.fetchUnscynedTodos()
-
         try await context.perform {
+            let unsyncedTodos = try context.fetchUnscynedTodos()
             let allTodos = TodoEntity.fetchRequest()
             let allCount = try context.count(for: allTodos)
 
@@ -43,10 +42,12 @@ class SynchronizationServiceTests: XCTestCase {
 
     func testUpdateTodoSyncState() async throws {
         let context = persistenceService.backgroundContext
-        let unsyncedTodos = try await context.fetchUnscynedTodos()
-        try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
-
         try await context.perform {
+            let unsyncedTodos = try context.fetchUnscynedTodos()
+            context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
+
+            try context.saveWithRollback()
+
             let allTodosRequest = TodoEntity.fetchRequest()
             let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
 
@@ -74,9 +75,10 @@ class SynchronizationServiceTests: XCTestCase {
     // and that is simulated with the title being set to "Updated title".
     func testImportTodosWithUnsyncedLocalChanges() async throws {
         let context = persistenceService.backgroundContext
-        try await context.importTodos(todos: todos)
 
-        try await context.perform {
+        try await context.perform { [weak self] in
+            guard let self = self else { return }
+            context.importTodos(todos: self.todos)
             let allTodosRequest = TodoEntity.fetchRequest()
             let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
 
