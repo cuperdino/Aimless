@@ -25,7 +25,15 @@ class SynchronizationService {
     }
 
     func performSynchronization() async throws {
-        //
+        // Fetch all unsynced items
+        let context = persistenceService.backgroundContext
+        let unsyncedTodos: [Todo] = try await persistenceService.backgroundContext.perform {
+            let unsyncedRequest = TodoEntity.unsyncedFetchRequest
+            return try context.fetch(unsyncedRequest).map { $0.asTodo }
+        }
+        
+        // post them to remote
+        // retrieve response and sync it to local
     }
 }
 
