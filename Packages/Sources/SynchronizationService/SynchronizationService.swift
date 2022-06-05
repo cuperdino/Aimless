@@ -25,13 +25,12 @@ class SynchronizationService {
     }
 
     func performSynchronization(context: NSManagedObjectContext) async throws {
-        // Fetch all unsynced items
         let unsyncedTodos = try await context.fetchUnscynedTodos()
-        // Set synchronization state to .synchronizationPending
         try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
     }
 }
 
+// MARK: Convinience extensions on NSManagedObjectContext used in SynchronizationService
 extension NSManagedObjectContext {
     internal func fetchUnscynedTodos() async throws -> [TodoEntity] {
         try await self.perform {
@@ -49,8 +48,9 @@ extension NSManagedObjectContext {
     }
 }
 
+// MARK: Convinience extensions on TodoEntity used in SynchronizationService
 extension TodoEntity {
-    static var unsyncedFetchRequest: NSFetchRequest<TodoEntity> {
+    internal static var unsyncedFetchRequest: NSFetchRequest<TodoEntity> {
         let request = NSFetchRequest<TodoEntity>(entityName: "TodoEntity")
         let predicate = NSPredicate(
             format: "%K == %d",
@@ -59,5 +59,18 @@ extension TodoEntity {
         )
         request.predicate = predicate
         return request
+    }
+
+    internal var asTodo: Todo {
+        Todo(userId: userId, id: id, title: title ?? "", completed: completed)
+    }
+
+    internal func updateFromTodo(todo: Todo, syncState: SynchronizationState) {
+        self.userId = todo.userId
+        self.id = todo.id
+        self.title = todo.title
+        self.completed = todo.completed
+        self.synchronizationState = syncState
+        self.updatedAt = Date()
     }
 }
