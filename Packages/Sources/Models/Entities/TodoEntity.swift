@@ -53,7 +53,7 @@ public class TodoEntity: NSManagedObject {
 
 public extension TodoEntity {
     var asTodo: Todo {
-        Todo(userId: userId, id: id, title: title, completed: completed)
+        Todo(userId: userId, id: id, title: title ?? "", completed: completed)
     }
 }
 

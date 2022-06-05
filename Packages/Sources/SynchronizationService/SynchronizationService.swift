@@ -24,16 +24,28 @@ class SynchronizationService {
         self.persistenceService = persistenceService
     }
 
-    func performSynchronization() async throws {
+    func performSynchronization(context: NSManagedObjectContext) async throws {
         // Fetch all unsynced items
-        let context = persistenceService.backgroundContext
-        let unsyncedTodos: [Todo] = try await persistenceService.backgroundContext.perform {
-            let unsyncedRequest = TodoEntity.unsyncedFetchRequest
-            return try context.fetch(unsyncedRequest).map { $0.asTodo }
+        let unsyncedTodos = try await context.fetchUnscynedTodos()
+        // Set synchronization state to .synchronizationPending
+        try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
+    }
+}
+
+extension NSManagedObjectContext {
+    internal func fetchUnscynedTodos() async throws -> [TodoEntity] {
+        try await self.perform {
+            return try self.fetch(TodoEntity.unsyncedFetchRequest)
         }
-        
-        // post them to remote
-        // retrieve response and sync it to local
+    }
+
+    internal func updateSyncState(on todos: [TodoEntity], state: SynchronizationState) async throws {
+        try await self.perform {
+            for todo in todos {
+                todo.synchronizationState = state
+            }
+            try self.saveWithRollback()
+        }
     }
 }
 

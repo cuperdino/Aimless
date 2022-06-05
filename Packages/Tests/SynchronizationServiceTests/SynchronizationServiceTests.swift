@@ -47,13 +47,53 @@ class SynchronizationServiceTests: XCTestCase {
     }
 
     func testPerformSynchronization() async throws {
-        try await self.synchronizationService.performSynchronization()
+        try await self.synchronizationService.performSynchronization(context: persistenceService.backgroundContext)
     }
 
     func testFetchUnsyncedTodos() async throws {
         let context = persistenceService.backgroundContext
+        await self.setupUnsyncedTodos()
+
+        let unsyncedTodos = try await context.fetchUnscynedTodos()
 
         try await context.perform {
+            let allTodos = TodoEntity.fetchRequest()
+            let allCount = try context.count(for: allTodos)
+
+            XCTAssertEqual(10, allCount)
+            XCTAssertEqual(4, unsyncedTodos.count)
+        }
+    }
+
+    func testUpdateSyncState() async throws {
+        let context = persistenceService.backgroundContext
+        await self.setupUnsyncedTodos()
+        let unsyncedTodos = try await context.fetchUnscynedTodos()
+        try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
+        try await context.perform {
+            let allTodosRequest = TodoEntity.fetchRequest()
+            let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
+
+            let allCount = try context.count(for: allTodosRequest)
+            let unsyncedCount = try context.count(for: unsyncedTodosRequest)
+
+            let allTodos = try context.fetch(allTodosRequest)
+            var syncPendingCount = 0
+            for todo in allTodos {
+                if todo.synchronizationState == .synchronizationPending {
+                    syncPendingCount += 1
+                }
+            }
+
+            XCTAssertEqual(allCount, 10)
+            XCTAssertEqual(unsyncedCount, 0)
+            XCTAssertEqual(syncPendingCount, 4)
+        }
+    }
+
+    func setupUnsyncedTodos() async {
+        let context = persistenceService.backgroundContext
+        try? await context.perform {
             for number in 1...4 {
                 let todoEntity = TodoEntity(context: context)
                 todoEntity.id = number
@@ -75,16 +115,5 @@ class SynchronizationServiceTests: XCTestCase {
             }
             try context.save()
         }
-
-        try await context.perform {
-            let allTodos = TodoEntity.fetchRequest()
-            let unsyncedFetchRequest = TodoEntity.unsyncedFetchRequest
-
-            let allCount = try context.count(for: allTodos)
-            let unsyncedCount = try context.count(for: unsyncedFetchRequest)
-            XCTAssertEqual(10, allCount)
-            XCTAssertEqual(4, unsyncedCount)
-        }
     }
-
 }
