@@ -32,7 +32,11 @@ class SynchronizationServiceTests: XCTestCase {
         self.persistenceService = PersistenceService(storeType: .inMemory)
         self.apiClient = ApiClient(transport: testTransport)
         self.dataImporter = DataImporterService(apiClient: apiClient, persistenceService: persistenceService)
-        self.synchronizationService = SynchronizationService(dataImporter: dataImporter, apiClient: apiClient)
+        self.synchronizationService = SynchronizationService(
+            dataImporter: dataImporter,
+            apiClient: apiClient,
+            persistenceService: persistenceService
+        )
     }
 
     override func tearDownWithError() throws {

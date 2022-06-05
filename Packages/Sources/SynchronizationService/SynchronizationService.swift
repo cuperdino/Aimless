@@ -10,19 +10,22 @@ import ApiClient
 import DataImporterService
 import Models
 import CoreData
+import PersistenceService
 
 class SynchronizationService {
 
     let dataImporter: DataImporterService
     let apiClient: ApiClient
+    let persistenceService: PersistenceService
 
-    init(dataImporter: DataImporterService, apiClient: ApiClient) {
+    init(dataImporter: DataImporterService, apiClient: ApiClient, persistenceService: PersistenceService) {
         self.dataImporter = dataImporter
         self.apiClient = apiClient
+        self.persistenceService = persistenceService
     }
 
     func performSynchronization() async throws {
-
+        //
     }
 }
 
