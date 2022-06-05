@@ -53,7 +53,7 @@ extension NSManagedObjectContext {
         }
     }
 
-    func saveWithRollback() throws {
+    public func saveWithRollback() throws {
         do {
             try self.save()
         } catch {

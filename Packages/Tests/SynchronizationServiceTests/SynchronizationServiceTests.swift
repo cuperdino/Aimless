@@ -6,11 +6,11 @@
 //
 
 import XCTest
-@testable import ApiClient
-@testable import DataImporterService
-@testable import PersistenceService
+import Models
+import ApiClient
+import DataImporterService
+import PersistenceService
 @testable import SynchronizationService
-@testable import Models
 
 class SynchronizationServiceTests: XCTestCase {
 

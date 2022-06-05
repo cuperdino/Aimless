@@ -49,7 +49,7 @@ extension URLSession: Transport {
 public class ApiClient {
     let transport: Transport
 
-    init(transport: Transport = URLSession.shared) {
+    public init(transport: Transport = URLSession.shared) {
         self.transport = transport
     }
 

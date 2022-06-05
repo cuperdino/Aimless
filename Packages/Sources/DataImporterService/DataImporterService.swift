@@ -16,7 +16,7 @@ public class DataImporterService {
     let apiClient: ApiClient
     let persistenceService: PersistenceService
 
-    init(apiClient: ApiClient, persistenceService: PersistenceService) {
+    public init(apiClient: ApiClient, persistenceService: PersistenceService) {
         self.apiClient = apiClient
         self.persistenceService = persistenceService
     }
