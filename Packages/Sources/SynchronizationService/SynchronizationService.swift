@@ -27,8 +27,9 @@ public class SynchronizationService {
         }
         guard unsyncedTodos.count > 0 else { return }
         do {
-            await context.perform {
+            try await context.perform {
                 context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
+                try context.saveWithRollback()
             }
             // Sync to remote, and update local state from remote,
             // in case merges happened on the server when posting.
