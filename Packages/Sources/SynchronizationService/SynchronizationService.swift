@@ -26,7 +26,25 @@ class SynchronizationService {
 
     func performSynchronization(context: NSManagedObjectContext) async throws {
         let unsyncedTodos = try await context.fetchUnscynedTodos()
+
         try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
+
+        let mappedTodos = await context.perform { unsyncedTodos.map(\.asTodo) }
+
+        // Sync to remote, and update local state from remote,
+        // in case merges happened on the server when posting.
+        //
+        // Note: as I am using a test API, the server does not actually
+        // change. However I added this in as well, just to show what
+        // can be done if if does.
+        do {
+            let response: PostArrayResponse<Todo> = try await apiClient.send(
+                request: .postTodos(todos: mappedTodos)
+            )
+            try await context.importTodos(todos: response.modelArray)
+        } catch {
+            try await context.updateSyncState(on: unsyncedTodos, state: .notSynchronized)
+        }
     }
 }
 
@@ -42,6 +60,30 @@ extension NSManagedObjectContext {
         try await self.perform {
             for todo in todos {
                 todo.synchronizationState = state
+            }
+            try self.saveWithRollback()
+        }
+    }
+
+    internal func importTodos(todos: [Todo]) async throws {
+        try await self.perform {
+            for todo in todos {
+                let todoEntity = TodoEntity.findOrCreate(id: todo.id, in: self)
+                // If the objectID is temporary, it means it's a new object,
+                // not yet persisted to the store. Therefore it is safe to
+                // write to it.
+                //
+                // If the .synchronizationState == .synchronized, it means
+                // the object has no local changes to it, which means it is
+                // safe to write to it.
+                //
+                // Otherwise, it means that a local change has occured to the item,
+                // and that the item has not yet been synced to remote.
+                // Nothing should be done to it now, as it will automatically
+                // be synced to remote upon the next sync.
+                if todoEntity.objectID.isTemporaryID || todoEntity.synchronizationState == .synchronized {
+                    todoEntity.updateFromTodo(todo: todo, syncState: .synchronized)
+                }
             }
             try self.saveWithRollback()
         }

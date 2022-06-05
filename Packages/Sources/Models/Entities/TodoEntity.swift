@@ -33,7 +33,7 @@ public class TodoEntity: NSManagedObject {
         }
     }
 
-    public static func findOrInsert(id: Int, in context: NSManagedObjectContext) -> TodoEntity {
+    public static func findOrCreate(id: Int, in context: NSManagedObjectContext) -> TodoEntity {
         let request = TodoEntity.fetchRequest()
 
         request.predicate = NSPredicate(

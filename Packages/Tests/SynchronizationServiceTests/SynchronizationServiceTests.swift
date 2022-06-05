@@ -52,7 +52,7 @@ class SynchronizationServiceTests: XCTestCase {
 
     func testFetchUnsyncedTodos() async throws {
         let context = persistenceService.backgroundContext
-        await self.setupUnsyncedTodos()
+        await self.setupUnsyncedTodoEntities()
 
         let unsyncedTodos = try await context.fetchUnscynedTodos()
 
@@ -67,7 +67,7 @@ class SynchronizationServiceTests: XCTestCase {
 
     func testUpdateSyncState() async throws {
         let context = persistenceService.backgroundContext
-        await self.setupUnsyncedTodos()
+        await self.setupUnsyncedTodoEntities()
         let unsyncedTodos = try await context.fetchUnscynedTodos()
         try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
         try await context.perform {
@@ -91,7 +91,42 @@ class SynchronizationServiceTests: XCTestCase {
         }
     }
 
-    func setupUnsyncedTodos() async {
+    // Here we simulate that we have 4 unsynced and 6 synced Todos
+    // saved in the persistence. As local changes should trump
+    // remote changes the 'importTodos(:)' method should NOT overwrite the
+    // 4 unsynced changes. The remaining synced todos should be updated
+    // and that is simulated with the title being set to "Updated title".
+    func testImportTodosWithUnsyncedLocalChanges() async throws {
+        let context = persistenceService.backgroundContext
+        await self.setupUnsyncedTodoEntities()
+        let todos = self.createTodos()
+        try await context.importTodos(todos: todos)
+
+        try await context.perform {
+            let allTodosRequest = TodoEntity.fetchRequest()
+            let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
+
+            let allCount = try context.count(for: allTodosRequest)
+            let unsyncedCount = try context.count(for: unsyncedTodosRequest)
+
+            XCTAssertEqual(allCount, 10)
+            XCTAssertEqual(unsyncedCount, 4)
+
+            var synchronizedCount = 0
+
+            for todo in try! context.fetch(allTodosRequest) {
+                if todo.synchronizationState == .synchronized {
+                    synchronizedCount += 1
+                    XCTAssertEqual("Updated title", todo.title!)
+                } else {
+                    XCTAssertEqual("Some title", todo.title!)
+                }
+            }
+            XCTAssertEqual(synchronizedCount, 6)
+        }
+    }
+
+    func setupUnsyncedTodoEntities() async {
         let context = persistenceService.backgroundContext
         try? await context.perform {
             for number in 1...4 {
@@ -115,5 +150,19 @@ class SynchronizationServiceTests: XCTestCase {
             }
             try context.save()
         }
+    }
+
+    func createTodos() -> [Todo] {
+        var todos = [Todo]()
+        for number in 1...10 {
+            let todo = Todo(
+                userId: number,
+                id: number,
+                title: "Updated title",
+                completed: false
+            )
+            todos.append(todo)
+        }
+        return todos
     }
 }
