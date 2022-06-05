@@ -24,12 +24,12 @@ final class PersistenceServiceTests: XCTestCase {
 
     func testTodoEntity() {
         let todoEntity = persistenceService.container.managedObjectModel.entitiesByName["TodoEntity"]!
-        verifyAttribute(named: "title", on: todoEntity, hasType: .string)
-        verifyAttribute(named: "id", on: todoEntity, hasType: .integer64)
-        verifyAttribute(named: "title", on: todoEntity, hasType: .string)
-        verifyAttribute(named: "userId", on: todoEntity, hasType: .integer64)
-        verifyAttribute(named: "synchronized", on: todoEntity, hasType: .integer64)
-        verifyAttribute(named: "updatedAt", on: todoEntity, hasType: .date)
+        verifyAttribute(named: "title", on: todoEntity, hasType: .string, isOptional: false)
+        verifyAttribute(named: "id", on: todoEntity, hasType: .integer64, isOptional: false)
+        verifyAttribute(named: "title", on: todoEntity, hasType: .string, isOptional: false)
+        verifyAttribute(named: "userId", on: todoEntity, hasType: .integer64, isOptional: false)
+        verifyAttribute(named: "synchronized", on: todoEntity, hasType: .integer64, isOptional: false)
+        verifyAttribute(named: "updatedAt", on: todoEntity, hasType: .date, isOptional: false)
 
         guard let userRelationship = todoEntity.relationshipsByName["user"] else {
             XCTFail("TodoEntity is missing expected relationship 'user'")
@@ -42,10 +42,10 @@ final class PersistenceServiceTests: XCTestCase {
 
     func testUserEntity() {
         let userEntity = persistenceService.container.managedObjectModel.entitiesByName["UserEntity"]!
-        verifyAttribute(named: "email", on: userEntity, hasType: .string)
-        verifyAttribute(named: "id", on: userEntity, hasType: .integer64)
-        verifyAttribute(named: "name", on: userEntity, hasType: .string)
-        verifyAttribute(named: "username", on: userEntity, hasType: .string)
+        verifyAttribute(named: "email", on: userEntity, hasType: .string, isOptional: false)
+        verifyAttribute(named: "id", on: userEntity, hasType: .integer64, isOptional: false)
+        verifyAttribute(named: "name", on: userEntity, hasType: .string, isOptional: false)
+        verifyAttribute(named: "username", on: userEntity, hasType: .string, isOptional: false)
 
         guard let todoRelationShip = userEntity.relationshipsByName["todos"] else {
             XCTFail("UserEntity is missing expected relationship 'todos'")
@@ -59,12 +59,14 @@ final class PersistenceServiceTests: XCTestCase {
     func verifyAttribute(
         named name: String,
         on entity: NSEntityDescription,
-        hasType type: NSAttributeDescription.AttributeType
+        hasType type: NSAttributeDescription.AttributeType,
+        isOptional: Bool
     ) {
         guard let attribute = entity.attributesByName[name] else {
             XCTFail("\(entity.name!) is missing expected attribute \(name)")
             return
         }
+        XCTAssertEqual(attribute.isOptional, isOptional)
         XCTAssertEqual(type, attribute.type)
     }
 
