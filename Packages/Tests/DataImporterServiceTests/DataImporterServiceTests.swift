@@ -25,7 +25,7 @@ class DataImporterServiceTests: XCTestCase {
             Todo(userId: 4, id: 4, title: "Fourth title", completed: true)
         ])
 
-        let testTransport = TestTransport(responseData: responseData, urlResponse: .valid)
+        let testTransport = TestTransport(responseData: responseData, urlResponse: .success)
 
         self.apiClient = ApiClient(transport: testTransport)
         self.persistenceService = PersistenceService(storeType: .inMemory)

@@ -9,9 +9,14 @@ import Foundation
 import ApiClient
 
 extension URLResponse {
-    public static var valid: HTTPURLResponse {
+    public static var success: HTTPURLResponse {
         let url = URL(string: "some.com")!
         return HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+    }
+
+    public static var error: HTTPURLResponse {
+        let url = URL(string: "some.com")!
+        return HTTPURLResponse(url: url, statusCode: 404, httpVersion: nil, headerFields: nil)!
     }
 }
 

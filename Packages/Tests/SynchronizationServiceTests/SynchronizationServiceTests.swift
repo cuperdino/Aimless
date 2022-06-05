@@ -6,39 +6,25 @@
 //
 
 import XCTest
-import Models
+@testable import Models
 import ApiClient
 import PersistenceService
 @testable import SynchronizationService
 
 class SynchronizationServiceTests: XCTestCase {
 
-    var apiClient: ApiClient!
-    var synchronizationService: SynchronizationService!
     var persistenceService: PersistenceService!
     lazy var todos = self.createTodos()
 
     override func setUpWithError() throws {
-        let todosData = try! JSONEncoder().encode(todos)
-        let testTransport = TestTransport(
-            responseData: todosData,
-            urlResponse: .valid
-        )
         self.persistenceService = PersistenceService(storeType: .inMemory)
-        self.apiClient = ApiClient(transport: testTransport)
-        self.synchronizationService = SynchronizationService(
-            apiClient: apiClient,
-            persistenceService: persistenceService
-        )
         Task {
             await self.setupUnsyncedTodoEntities()
         }
     }
 
     override func tearDownWithError() throws {
-        self.apiClient = nil
         self.persistenceService = nil
-        self.synchronizationService = nil
     }
 
     func testFetchUnsyncedTodos() async throws {
@@ -115,7 +101,96 @@ class SynchronizationServiceTests: XCTestCase {
     }
 
     func testPerformSynchronization() async throws {
-        try await self.synchronizationService.performSynchronization(context: persistenceService.backgroundContext)
+        // Setup
+        let context = self.persistenceService.backgroundContext
+        let testTransport = TestTransport(
+            responseData: createPostResponse(),
+            urlResponse: .success
+        )
+        let apiClient = ApiClient(transport: testTransport)
+        let synchronizationService = SynchronizationService(
+            apiClient: apiClient,
+            persistenceService: persistenceService
+        )
+
+        // Validate state before synchronization
+        try await context.perform {
+            let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
+            let allTodosRequest = TodoEntity.fetchRequest()
+            let unsyncedTodosCount = try context.count(for: unsyncedTodosRequest)
+            let allTodosCount = try context.count(for: allTodosRequest)
+
+            XCTAssertEqual(allTodosCount, 10)
+            XCTAssertEqual(unsyncedTodosCount, 4)
+        }
+
+        // Perform synchronization
+        try await synchronizationService.performSynchronization(context: context)
+
+        // Validate state after synchronization
+        try await context.perform {
+            let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
+            let allTodosRequest = TodoEntity.fetchRequest()
+            let unsyncedTodosCount = try context.count(for: unsyncedTodosRequest)
+            let allTodosCount = try context.count(for: allTodosRequest)
+
+            XCTAssertEqual(allTodosCount, 10)
+            XCTAssertEqual(unsyncedTodosCount, 0)
+        }
+    }
+
+    // We pass an error state to api client, which means
+    // that the synchronization will error out, and all
+    // initially unsynced objects should be reset to the
+    // unsynced state, even if they changed their state during
+    // the synchronization process.
+    func testPerformSynchronizationWithError() async throws {
+        // Setup
+        let context = self.persistenceService.backgroundContext
+        let testTransport = TestTransport(
+            responseData: Data(),
+            urlResponse: .error
+        )
+        let apiClient = ApiClient(transport: testTransport)
+        let synchronizationService = SynchronizationService(
+            apiClient: apiClient,
+            persistenceService: persistenceService
+        )
+
+        try await context.perform {
+            let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
+            let allTodosRequest = TodoEntity.fetchRequest()
+            let unsyncedTodosCount = try context.count(for: unsyncedTodosRequest)
+            let allTodosCount = try context.count(for: allTodosRequest)
+
+            XCTAssertEqual(allTodosCount, 10)
+            XCTAssertEqual(unsyncedTodosCount, 4)
+        }
+
+        // Validate state before synchronization
+        try await context.perform {
+            let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
+            let allTodosRequest = TodoEntity.fetchRequest()
+            let unsyncedTodosCount = try context.count(for: unsyncedTodosRequest)
+            let allTodosCount = try context.count(for: allTodosRequest)
+
+            XCTAssertEqual(allTodosCount, 10)
+            XCTAssertEqual(unsyncedTodosCount, 4)
+        }
+
+        // Perform synchronization
+        try await synchronizationService.performSynchronization(context: context)
+
+        // Validate state after synchronization
+        try await context.perform {
+            let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
+            let allTodosRequest = TodoEntity.fetchRequest()
+            let unsyncedTodosCount = try context.count(for: unsyncedTodosRequest)
+            let allTodosCount = try context.count(for: allTodosRequest)
+
+            XCTAssertEqual(allTodosCount, 10)
+            XCTAssertEqual(unsyncedTodosCount, 4)
+        }
     }
 
     private func setupUnsyncedTodoEntities() async {
@@ -156,5 +231,39 @@ class SynchronizationServiceTests: XCTestCase {
             todos.append(todo)
         }
         return todos
+    }
+
+    private func createPostResponse() -> Data {
+        let string =
+        """
+        {
+            "1": {
+                "userId": 1,
+                "id": 1,
+                "title": "Updated title",
+                "completed": false
+            },
+            "2": {
+                "userId": 2,
+                "id": 2,
+                "title": "Updated title",
+                "completed": true
+            },
+            "3": {
+                "userId": 3,
+                "id": 3,
+                "title": "Updated title",
+                "completed": false
+            },
+            "4": {
+                "userId": 4,
+                "id": 4,
+                "title": "Updated title",
+                "completed": true
+            },
+            "id": 201
+        }
+        """
+        return Data(string.utf8)
     }
 }

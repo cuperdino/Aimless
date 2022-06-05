@@ -22,19 +22,18 @@ class SynchronizationService {
     }
 
     func performSynchronization(context: NSManagedObjectContext) async throws {
+        // Check count of usynced, and don't do anything if non are present
         let unsyncedTodos = try await context.fetchUnscynedTodos()
-
-        try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
-
-        let mappedTodos = await context.perform { unsyncedTodos.map(\.asTodo) }
-
-        // Sync to remote, and update local state from remote,
-        // in case merges happened on the server when posting.
-        //
-        // Note: as I am using a test API, the server does not actually
-        // change. However I added this in as well, just to show what
-        // can be done if if does.
+        
         do {
+            try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
+            let mappedTodos = await context.perform { unsyncedTodos.map(\.asTodo) }
+            // Sync to remote, and update local state from remote,
+            // in case merges happened on the server when posting.
+            //
+            // Note: as I am using a test API, the server does not actually
+            // change. However I added this in as well, just to show what
+            // can be done if if does.
             let response: PostArrayResponse<Todo> = try await apiClient.send(
                 request: .postTodos(todos: mappedTodos)
             )
