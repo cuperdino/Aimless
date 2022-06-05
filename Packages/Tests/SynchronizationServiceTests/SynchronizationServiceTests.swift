@@ -41,10 +41,6 @@ class SynchronizationServiceTests: XCTestCase {
         self.synchronizationService = nil
     }
 
-    func testPerformSynchronization() async throws {
-        try await self.synchronizationService.performSynchronization(context: persistenceService.backgroundContext)
-    }
-
     func testFetchUnsyncedTodos() async throws {
         let context = persistenceService.backgroundContext
 
@@ -59,7 +55,7 @@ class SynchronizationServiceTests: XCTestCase {
         }
     }
 
-    func testUpdateSyncState() async throws {
+    func testUpdateTodoSyncState() async throws {
         let context = persistenceService.backgroundContext
         let unsyncedTodos = try await context.fetchUnscynedTodos()
         try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
@@ -118,7 +114,11 @@ class SynchronizationServiceTests: XCTestCase {
         }
     }
 
-    func setupUnsyncedTodoEntities() async {
+    func testPerformSynchronization() async throws {
+        try await self.synchronizationService.performSynchronization(context: persistenceService.backgroundContext)
+    }
+
+    private func setupUnsyncedTodoEntities() async {
         let context = persistenceService.backgroundContext
         try? await context.perform {
             for number in 1...4 {
@@ -144,7 +144,7 @@ class SynchronizationServiceTests: XCTestCase {
         }
     }
 
-    func createTodos() -> [Todo] {
+    private func createTodos() -> [Todo] {
         var todos = [Todo]()
         for number in 1...10 {
             let todo = Todo(
