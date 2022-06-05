@@ -8,10 +8,12 @@
 import Foundation
 import CoreData
 
-class PersistenceService {
-    let container: PersistenceContainer
+public class PersistenceService {
+    public let container: PersistenceContainer
+    public let backgroundContext: NSManagedObjectContext
+    public let viewContext: NSManagedObjectContext
 
-    init(storeType: PersistenceContainer.StoreType = .persisted) {
+    public init(storeType: PersistenceContainer.StoreType = .persisted) {
         container = PersistenceContainer(name: "Model", storeType: storeType)
 
         container.loadPersistentStores(completionHandler: { description, error in
@@ -19,6 +21,9 @@ class PersistenceService {
                 fatalError("Core Data store failed to load with error: \(error)")
             }
         })
+
+        self.viewContext = container.viewContext
+        self.backgroundContext = container.newBackgroundContext()
     }
 }
 
@@ -31,11 +36,10 @@ extension NSManagedObjectContext {
         var entity = entity.init(context: self)
         body(&entity)
         do {
-            try self.save()
+            try self.saveWithRollback()
             return entity
         } catch {
-            self.rollback()
-            print("Error", error)
+            print(error)
             return nil
         }
     }
@@ -43,10 +47,18 @@ extension NSManagedObjectContext {
     func delete<T: NSManagedObject>(entity: T) {
         self.delete(entity)
         do {
+            try self.saveWithRollback()
+        } catch {
+            print(error)
+        }
+    }
+
+    public func saveWithRollback() throws {
+        do {
             try self.save()
         } catch {
             self.rollback()
-            print("Error", error)
+            throw error
         }
     }
 }

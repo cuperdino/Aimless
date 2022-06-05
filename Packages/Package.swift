@@ -15,6 +15,12 @@ let package = Package(
             name: "PersistenceService",
             targets: ["PersistenceService"]),
         .library(
+            name: "SynchronizationService",
+            targets: ["SynchronizationService"]),
+        .library(
+            name: "DataImporterService",
+            targets: ["DataImporterService"]),
+        .library(
             name: "Models",
             targets: ["Models"]),
     ],
@@ -40,8 +46,31 @@ let package = Package(
             name: "PersistenceServiceTests",
             dependencies: ["PersistenceService"]),
         .target(
+            name: "SynchronizationService",
+            dependencies: [
+                "Models",
+                "DataImporterService",
+                "PersistenceService",
+                "ApiClient"
+            ]
+        ),
+        .testTarget(
+            name: "SynchronizationServiceTests",
+            dependencies: ["SynchronizationService"]),
+        .target(
+            name: "DataImporterService",
+            dependencies: [
+                "Models",
+                "PersistenceService",
+                "ApiClient"
+            ]
+        ),
+        .testTarget(
+            name: "DataImporterServiceTests",
+            dependencies: ["DataImporterService"]),
+        .target(
             name: "Models",
             dependencies: []
-        )
+        ),
     ]
 )

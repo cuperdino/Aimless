@@ -24,12 +24,12 @@ final class PersistenceServiceTests: XCTestCase {
 
     func testTodoEntity() {
         let todoEntity = persistenceService.container.managedObjectModel.entitiesByName["TodoEntity"]!
-        verifyAttribute(named: "title", on: todoEntity, hasType: .string)
-        verifyAttribute(named: "id", on: todoEntity, hasType: .integer64)
-        verifyAttribute(named: "title", on: todoEntity, hasType: .string)
-        verifyAttribute(named: "userId", on: todoEntity, hasType: .integer64)
-        verifyAttribute(named: "synchronized", on: todoEntity, hasType: .integer64)
-        verifyAttribute(named: "updatedAt", on: todoEntity, hasType: .date)
+        verifyAttribute(named: "title", on: todoEntity, hasType: .string, isOptional: false)
+        verifyAttribute(named: "id", on: todoEntity, hasType: .integer64, isOptional: false)
+        verifyAttribute(named: "title", on: todoEntity, hasType: .string, isOptional: false)
+        verifyAttribute(named: "userId", on: todoEntity, hasType: .integer64, isOptional: false)
+        verifyAttribute(named: "synchronized", on: todoEntity, hasType: .integer64, isOptional: false)
+        verifyAttribute(named: "updatedAt", on: todoEntity, hasType: .date, isOptional: false)
 
         guard let userRelationship = todoEntity.relationshipsByName["user"] else {
             XCTFail("TodoEntity is missing expected relationship 'user'")
@@ -42,10 +42,10 @@ final class PersistenceServiceTests: XCTestCase {
 
     func testUserEntity() {
         let userEntity = persistenceService.container.managedObjectModel.entitiesByName["UserEntity"]!
-        verifyAttribute(named: "email", on: userEntity, hasType: .string)
-        verifyAttribute(named: "id", on: userEntity, hasType: .integer64)
-        verifyAttribute(named: "name", on: userEntity, hasType: .string)
-        verifyAttribute(named: "username", on: userEntity, hasType: .string)
+        verifyAttribute(named: "email", on: userEntity, hasType: .string, isOptional: false)
+        verifyAttribute(named: "id", on: userEntity, hasType: .integer64, isOptional: false)
+        verifyAttribute(named: "name", on: userEntity, hasType: .string, isOptional: false)
+        verifyAttribute(named: "username", on: userEntity, hasType: .string, isOptional: false)
 
         guard let todoRelationShip = userEntity.relationshipsByName["todos"] else {
             XCTFail("UserEntity is missing expected relationship 'todos'")
@@ -59,23 +59,25 @@ final class PersistenceServiceTests: XCTestCase {
     func verifyAttribute(
         named name: String,
         on entity: NSEntityDescription,
-        hasType type: NSAttributeDescription.AttributeType
+        hasType type: NSAttributeDescription.AttributeType,
+        isOptional: Bool
     ) {
         guard let attribute = entity.attributesByName[name] else {
             XCTFail("\(entity.name!) is missing expected attribute \(name)")
             return
         }
+        XCTAssertEqual(attribute.isOptional, isOptional)
         XCTAssertEqual(type, attribute.type)
     }
 
     func testSave() async throws {
         let todoRequest = TodoEntity.fetchRequest()
-        let viewContext = persistenceService.container.viewContext
-        let todoInitialCount = try viewContext.count(for: todoRequest)
+        let viewContext = persistenceService.viewContext
 
-        XCTAssertEqual(todoInitialCount, 0)
+        try await viewContext.perform {
+            let todoInitialCount = try viewContext.count(for: todoRequest)
+            XCTAssertEqual(todoInitialCount, 0)
 
-        await viewContext.perform {
             _ = viewContext.save(TodoEntity.self) { todo in
                 todo.id = 1
                 todo.title = "A title"
@@ -84,18 +86,17 @@ final class PersistenceServiceTests: XCTestCase {
                 todo.synchronizationState = .notSynchronized
                 todo.updatedAt = Date()
             }
+            let todoFinalCount = try viewContext.count(for: todoRequest)
+            XCTAssertEqual(todoFinalCount, 1)
         }
-
-        let todoFinalCount = try viewContext.count(for: todoRequest)
-        XCTAssertEqual(todoFinalCount, 1)
     }
 
     func testSaveWithRelationShips() async throws {
         let todoRequest = TodoEntity.fetchRequest()
         let userRequest = UserEntity.fetchRequest()
-        let viewContext = persistenceService.container.viewContext
+        let viewContext = persistenceService.viewContext
 
-        await viewContext.perform {
+        try await viewContext.perform {
             let todo = viewContext.save(TodoEntity.self) { todo in
                 todo.id = 1
                 todo.title = "A title"
@@ -113,19 +114,19 @@ final class PersistenceServiceTests: XCTestCase {
                 user.username = "cuperdino"
                 user.addToTodos(todo)
             }
+
+            let todoToAssert = try viewContext.fetch(todoRequest).first!
+            let user = try viewContext.fetch(userRequest).first!
+            let userTodo = user.todos?.allObjects.first as? TodoEntity
+
+            XCTAssertEqual(todoToAssert.user, user)
+            XCTAssertEqual(userTodo, todo)
         }
-
-        let todo = try viewContext.fetch(todoRequest).first!
-        let user = try viewContext.fetch(userRequest).first!
-        let userTodo = user.todos?.allObjects.first as? TodoEntity
-
-        XCTAssertEqual(todo.user, user)
-        XCTAssertEqual(userTodo, todo)
     }
 
     func testDelete() async throws {
         let request = UserEntity.fetchRequest()
-        let context = persistenceService.container.viewContext
+        let context = persistenceService.viewContext
 
         await context.perform {
             _ = context.save(UserEntity.self) { user in
@@ -136,13 +137,36 @@ final class PersistenceServiceTests: XCTestCase {
             }
         }
 
-        let countBeforeDelete = try context.count(for: request)
-        XCTAssertEqual(countBeforeDelete, 1)
+        try await context.perform {
+            let countBeforeDelete = try context.count(for: request)
+            XCTAssertEqual(countBeforeDelete, 1)
 
-        let user = try context.fetch(request).first!
-        context.delete(entity: user)
+            let user = try context.fetch(request).first!
+            context.delete(entity: user)
 
-        let countAfterDelete = try context.count(for: request)
-        XCTAssertEqual(countAfterDelete, 0)
+            let countAfterDelete = try context.count(for: request)
+            XCTAssertEqual(countAfterDelete, 0)
+        }
+    }
+
+    func testSaveWithRollback() async throws {
+        let context = persistenceService.viewContext
+        await context.perform {
+            let todo1 = TodoEntity(context: context)
+            todo1.title = ""
+            // Perform a save without assigning non-optional values
+            try? context.save()
+            // As we have not rolled back, there are items
+            // in the insertedObjects of the context
+            XCTAssertFalse(context.insertedObjects.isEmpty)
+
+            let todo2 = TodoEntity(context: context)
+            todo2.title = ""
+            // Perform a save without assigning non-optional values
+            try? context.saveWithRollback()
+            // As we have rolled back, there should not be
+            // any elements in the insertedObjects of the context
+            XCTAssertTrue(context.insertedObjects.isEmpty)
+        }
     }
 }
