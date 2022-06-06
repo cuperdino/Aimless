@@ -103,7 +103,7 @@ struct SheetView: View {
                     }
                     .swipeActions(allowsFullSwipe: false) {
                         Button {
-
+                            self.viewModel.restoreDelete(todo: todo)
                         } label: {
                             Label("Restore", systemImage: "arrow.3.trianglepath")
                         }
