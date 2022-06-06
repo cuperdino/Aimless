@@ -53,23 +53,13 @@ extension NSManagedObjectContext {
         }
     }
 
-    func softDelete(todo: TodoEntity) {
+    public func softDelete(todo: TodoEntity) {
         todo.deletionState = .deletionPending
         todo.deletedAt = Date.now
-        do {
-            try self.saveWithRollback()
-        } catch {
-            print(error)
-        }
     }
 
-    func hardDelete(todo: TodoEntity) {
+    public func hardDelete(todo: TodoEntity) {
         todo.deletionState = .deleted
-        do {
-            try self.saveWithRollback()
-        } catch {
-            print(error)
-        }
     }
 
     func delete<T: NSManagedObject>(entity: T) {
