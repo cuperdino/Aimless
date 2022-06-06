@@ -15,6 +15,7 @@ import DataImporterService
 
 class SyncWrapper {
     let synchronizationService: SynchronizationService
+    private var task: Task<Void, Never>?
 
     init(apiClient: ApiClient, persistenceService: PersistenceService, dataImporter: DataImporterService) {
         self.synchronizationService = SynchronizationService(
@@ -24,13 +25,21 @@ class SyncWrapper {
         )
     }
 
-    func startSyncService(context: NSManagedObjectContext) {
-        Task {
+    func startSyncService(context: NSManagedObjectContext) async {
+        self.task = Task {
             while true {
-                try await self.synchronizationService.performSynchronization(context: context)
+                guard !Task.isCancelled else { return }
+                print("Sync started")
+                await self.synchronizationService.performSynchronization(context: context)
+                print("Sync ended")
                 try? await Task.sleep(nanoseconds: 20_000_000_000)
             }
         }
+        await task?.value
+    }
+
+    func stopSyncService() {
+        self.task?.cancel()
     }
 }
 
@@ -51,14 +60,14 @@ struct AimlessApp: App {
             persistenceService:persistence,
             dataImporter: dataImporter
         )
-
-        self.syncWrapper.startSyncService(context: persistence.backgroundContext)
     }
 
     var body: some Scene {
         WindowGroup {
             NavigationView {
                 TodosView(viewModel: TodosViewModel(persistenceService: persistence, dataImporter: dataImporter))
+            }.task {
+                await syncWrapper.startSyncService(context: persistence.backgroundContext)
             }
         }
     }
