@@ -3,7 +3,7 @@
 The name Aimless is simply because I didn't have a particular aim when I started coding this app. 
 
 ## TL;DR
-This is an app demonstrating an offline first approach, with a remote synchronization strategy. 
+This is an iOS app demonstrating an offline first approach, with a remote synchronization strategy. 
 
 ## Overview
 This readme covers the following:
