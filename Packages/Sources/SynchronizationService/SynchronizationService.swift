@@ -42,6 +42,11 @@ public class SynchronizationService {
             )
 
             try await context.perform {
+                context.updateSyncState(on: unsyncedTodos, state: .synchronized)
+                try context.saveWithRollback()
+            }
+
+            try await context.perform {
                 context.importTodos(todos: response.modelArray)
                 try context.saveWithRollback()
             }
