@@ -56,6 +56,12 @@ public class TodoEntity: NSManagedObject {
 extension TodoEntity {
     public static var sortedFetchRequest: NSFetchRequest<TodoEntity> = {
         let request = TodoEntity.fetchRequest()
+        let notDeletedPredicated = NSPredicate(
+            format: "%K == %d",
+            #keyPath(TodoEntity.deletion),
+            DeletionState.notDeleted.rawValue
+        )
+        request.predicate = notDeletedPredicated
         request.sortDescriptors = [NSSortDescriptor(keyPath: \TodoEntity.updatedAt, ascending: false)]
         return request
     }()
