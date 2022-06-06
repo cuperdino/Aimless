@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		9E11EB672843D050009DF884 /* AimlessApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E11EB662843D050009DF884 /* AimlessApp.swift */; };
-		9E11EB692843D050009DF884 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E11EB682843D050009DF884 /* ContentView.swift */; };
 		9E11EB6B2843D053009DF884 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E11EB6A2843D053009DF884 /* Assets.xcassets */; };
 		9E11EB6E2843D053009DF884 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9E11EB6D2843D053009DF884 /* Preview Assets.xcassets */; };
 		9E11EB782843D053009DF884 /* AimlessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E11EB772843D053009DF884 /* AimlessTests.swift */; };
@@ -42,7 +41,6 @@
 /* Begin PBXFileReference section */
 		9E11EB632843D050009DF884 /* Aimless.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Aimless.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E11EB662843D050009DF884 /* AimlessApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AimlessApp.swift; sourceTree = "<group>"; };
-		9E11EB682843D050009DF884 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9E11EB6A2843D053009DF884 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9E11EB6D2843D053009DF884 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9E11EB732843D053009DF884 /* AimlessTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AimlessTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -110,7 +108,6 @@
 			isa = PBXGroup;
 			children = (
 				9E11EB662843D050009DF884 /* AimlessApp.swift */,
-				9E11EB682843D050009DF884 /* ContentView.swift */,
 				9E11EB6A2843D053009DF884 /* Assets.xcassets */,
 				9E11EB6C2843D053009DF884 /* Preview Content */,
 			);
@@ -287,7 +284,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9E11EB692843D050009DF884 /* ContentView.swift in Sources */,
 				9E11EB672843D050009DF884 /* AimlessApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
