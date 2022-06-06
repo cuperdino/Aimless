@@ -17,7 +17,7 @@ public class TodoEntity: NSManagedObject {
 
     @NSManaged public var completed: Bool
     @NSManaged public var id: Int
-    @NSManaged public var title: String?
+    @NSManaged public var title: String
     @NSManaged public var userId: Int
     @NSManaged public var user: UserEntity?
     @NSManaged public var synchronized: Int
@@ -49,6 +49,14 @@ public class TodoEntity: NSManagedObject {
             return todo
         }
     }
+}
+
+extension TodoEntity {
+    public static var sortedFetchRequest: NSFetchRequest<TodoEntity> = {
+        let request = TodoEntity.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \TodoEntity.title, ascending: true)]
+        return request
+    }()
 }
 
 

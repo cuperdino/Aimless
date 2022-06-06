@@ -6,12 +6,18 @@
 //
 
 import SwiftUI
+import PersistenceService
+import TodosFeature
 
 @main
 struct AimlessApp: App {
+    let persistence = PersistenceService()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationView {
+                TodosView(viewModel: TodosViewModel(persistenceService: persistence))
+            }
         }
     }
 }

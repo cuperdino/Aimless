@@ -29,7 +29,7 @@ public class PersistenceService {
 
 extension NSManagedObjectContext {
     @discardableResult
-    func save<T: NSManagedObject>(
+    public func save<T: NSManagedObject>(
         _ entity: T.Type,
         _ body: (inout T) -> Void
     ) -> T? {

@@ -14,6 +14,12 @@
 		9E11EB782843D053009DF884 /* AimlessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E11EB772843D053009DF884 /* AimlessTests.swift */; };
 		9E11EB822843D053009DF884 /* AimlessUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E11EB812843D053009DF884 /* AimlessUITests.swift */; };
 		9E11EB842843D053009DF884 /* AimlessUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E11EB832843D053009DF884 /* AimlessUITestsLaunchTests.swift */; };
+		9E9875EA284E0A170088D69B /* ApiClient in Frameworks */ = {isa = PBXBuildFile; productRef = 9E9875E9284E0A170088D69B /* ApiClient */; };
+		9E9875EC284E0A170088D69B /* DataImporterService in Frameworks */ = {isa = PBXBuildFile; productRef = 9E9875EB284E0A170088D69B /* DataImporterService */; };
+		9E9875EE284E0A170088D69B /* Models in Frameworks */ = {isa = PBXBuildFile; productRef = 9E9875ED284E0A170088D69B /* Models */; };
+		9E9875F0284E0A170088D69B /* PersistenceService in Frameworks */ = {isa = PBXBuildFile; productRef = 9E9875EF284E0A170088D69B /* PersistenceService */; };
+		9E9875F2284E0A170088D69B /* SynchronizationService in Frameworks */ = {isa = PBXBuildFile; productRef = 9E9875F1284E0A170088D69B /* SynchronizationService */; };
+		9E9875F6284E0AC70088D69B /* TodosFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9E9875F5284E0AC70088D69B /* TodosFeature */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +58,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E9875F0284E0A170088D69B /* PersistenceService in Frameworks */,
+				9E9875EE284E0A170088D69B /* Models in Frameworks */,
+				9E9875EC284E0A170088D69B /* DataImporterService in Frameworks */,
+				9E9875F6284E0AC70088D69B /* TodosFeature in Frameworks */,
+				9E9875F2284E0A170088D69B /* SynchronizationService in Frameworks */,
+				9E9875EA284E0A170088D69B /* ApiClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,6 +92,7 @@
 				9E11EB762843D053009DF884 /* AimlessTests */,
 				9E11EB802843D053009DF884 /* AimlessUITests */,
 				9E11EB642843D050009DF884 /* Products */,
+				9E9875E8284E0A170088D69B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -129,6 +142,13 @@
 			path = AimlessUITests;
 			sourceTree = "<group>";
 		};
+		9E9875E8284E0A170088D69B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -145,6 +165,14 @@
 			dependencies = (
 			);
 			name = Aimless;
+			packageProductDependencies = (
+				9E9875E9284E0A170088D69B /* ApiClient */,
+				9E9875EB284E0A170088D69B /* DataImporterService */,
+				9E9875ED284E0A170088D69B /* Models */,
+				9E9875EF284E0A170088D69B /* PersistenceService */,
+				9E9875F1284E0A170088D69B /* SynchronizationService */,
+				9E9875F5284E0AC70088D69B /* TodosFeature */,
+			);
 			productName = Aimless;
 			productReference = 9E11EB632843D050009DF884 /* Aimless.app */;
 			productType = "com.apple.product-type.application";
@@ -585,6 +613,33 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9E9875E9284E0A170088D69B /* ApiClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ApiClient;
+		};
+		9E9875EB284E0A170088D69B /* DataImporterService */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DataImporterService;
+		};
+		9E9875ED284E0A170088D69B /* Models */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Models;
+		};
+		9E9875EF284E0A170088D69B /* PersistenceService */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PersistenceService;
+		};
+		9E9875F1284E0A170088D69B /* SynchronizationService */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SynchronizationService;
+		};
+		9E9875F5284E0AC70088D69B /* TodosFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TodosFeature;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9E11EB5B2843D050009DF884 /* Project object */;
 }
