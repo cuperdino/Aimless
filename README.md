@@ -48,7 +48,7 @@ The synchronization strategy for deleted items is as follows:
 2. Sync deleted items to remote.
 3. Delete items locally.
 
-### Arhitecture, testing and technologies
+## Arhitecture, testing and technologies
 The code base is organised in local SPM modules, where each service and feature represents a distinct package. Apart from the obvious benefits, such as 
 seperation of concern and loose coupling, there is also an added benefit of reduced build times, as each package has its own target, which means you don't have to build the whole application when you are only working in a specific module. This is also great for fast build of SwiftUI previews.
 
