@@ -11,14 +11,16 @@ import TodosFeature
 import SynchronizationService
 import ApiClient
 import CoreData
+import DataImporterService
 
 class SyncWrapper {
     let synchronizationService: SynchronizationService
 
-    init(apiClient: ApiClient, persistenceService: PersistenceService) {
+    init(apiClient: ApiClient, persistenceService: PersistenceService, dataImporter: DataImporterService) {
         self.synchronizationService = SynchronizationService(
             apiClient: apiClient,
-            persistenceService: persistenceService
+            persistenceService: persistenceService,
+            dataImporter: dataImporter
         )
     }
 
@@ -39,11 +41,18 @@ struct AimlessApp: App {
     let persistence: PersistenceService
     let apiClient: ApiClient
     let syncWrapper: SyncWrapper
+    let dataImporter: DataImporterService
 
     init() {
         self.persistence = PersistenceService()
         self.apiClient = ApiClient()
-        self.syncWrapper = SyncWrapper(apiClient: apiClient, persistenceService: persistence)
+        self.dataImporter = DataImporterService(apiClient: apiClient, persistenceService: persistence)
+
+        self.syncWrapper = SyncWrapper(
+            apiClient: apiClient,
+            persistenceService:persistence,
+            dataImporter: dataImporter
+        )
 
         self.syncWrapper.startSyncService(context: persistence.backgroundContext)
     }
@@ -51,7 +60,7 @@ struct AimlessApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationView {
-                TodosView(viewModel: TodosViewModel(persistenceService: persistence))
+                TodosView(viewModel: TodosViewModel(persistenceService: persistence, dataImporter: dataImporter))
             }
         }
     }

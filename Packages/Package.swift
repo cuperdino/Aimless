@@ -77,7 +77,7 @@ let package = Package(
         ),
         .target(
             name: "TodosFeature",
-            dependencies: ["Models", "PersistenceService"]
+            dependencies: ["Models", "PersistenceService", "DataImporterService"]
         )
     ]
 )

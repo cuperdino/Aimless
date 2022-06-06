@@ -58,7 +58,7 @@ public struct TodosView: View {
                     }
                     Spacer()
                     Button {
-                        viewModel.saveTodo()
+                        viewModel.importTodosFromRemote()
                     } label: {
                         HStack {
                             Text("Import from remote")

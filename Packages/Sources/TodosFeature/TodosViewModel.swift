@@ -7,6 +7,7 @@
 
 import Foundation
 import PersistenceService
+import DataImporterService
 import Models
 import Combine
 import CoreData
@@ -43,13 +44,15 @@ extension TodosFeatureStorage: NSFetchedResultsControllerDelegate {
 
 public class TodosViewModel: ObservableObject {
     let persistenceService: PersistenceService
+    let dataImporter: DataImporterService
     let todosStorage: TodosFeatureStorage
     var cancellables = [AnyCancellable]()
 
     @Published var todos: [TodoEntity] = []
 
-    public init(persistenceService: PersistenceService) {
+    public init(persistenceService: PersistenceService, dataImporter: DataImporterService) {
         self.persistenceService = persistenceService
+        self.dataImporter = dataImporter
         self.todosStorage = TodosFeatureStorage(context: persistenceService.viewContext)
 
         self.todosStorage.todos.sink { todos in
@@ -76,6 +79,12 @@ public class TodosViewModel: ObservableObject {
         }
 
         try? persistenceService.viewContext.save()
+    }
+
+    func importTodosFromRemote() {
+        Task {
+            try? await self.dataImporter.importTodosFromRemote()
+        }
     }
 
     func randomizedId() -> Int {
