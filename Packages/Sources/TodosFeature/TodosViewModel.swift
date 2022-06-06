@@ -25,6 +25,7 @@ class TodosFeatureStorage: NSObject {
         fetchedResultsController.delegate = self
         do {
             try fetchedResultsController.performFetch()
+            self.todos.value = fetchedResultsController.fetchedObjects ?? []
         } catch {
             print("Could not fetch todos")
         }
@@ -47,7 +48,7 @@ public class TodosViewModel: ObservableObject {
 
     @Published var todos: [TodoEntity] = []
 
-    public init(persistenceService: PersistenceService = PersistenceService(storeType: .inMemory)) {
+    public init(persistenceService: PersistenceService) {
         self.persistenceService = persistenceService
         self.todosStorage = TodosFeatureStorage(context: persistenceService.viewContext)
 
@@ -56,10 +57,12 @@ public class TodosViewModel: ObservableObject {
         }.store(in: &cancellables)
     }
 
-    func saveTodo(title: String) {
+    func saveTodo() {
         persistenceService.viewContext.save(TodoEntity.self) { todo in
-            todo.id = randomizedId()
-            todo.userId = randomizedId()
+            let id = randomizedId()
+            todo.id = id
+            todo.userId = id
+            todo.title = "Todo with id: \(id)"
             todo.synchronizationState = .notSynchronized
             todo.completed = false
             todo.updatedAt = Date()

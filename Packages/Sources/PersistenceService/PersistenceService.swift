@@ -22,6 +22,9 @@ public class PersistenceService {
             }
         })
 
+        container.viewContext.automaticallyMergesChangesFromParent = true
+        container.viewContext.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
+
         self.viewContext = container.viewContext
         self.backgroundContext = container.newBackgroundContext()
     }
