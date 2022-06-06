@@ -27,9 +27,7 @@ class SyncWrapper {
     func startSyncService(context: NSManagedObjectContext) {
         Task {
             while true {
-                print("Synchronization started")
-                try? await self.synchronizationService.performSynchronization(context: context)
-                print("Synchronization finished")
+                try await self.synchronizationService.performSynchronization(context: context)
                 try? await Task.sleep(nanoseconds: 20_000_000_000)
             }
         }

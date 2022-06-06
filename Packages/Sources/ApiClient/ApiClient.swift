@@ -57,11 +57,16 @@ public class ApiClient {
         let data = try await transport.send(request: request)
         return try JSONDecoder().decode(T.self, from: data)
     }
+
+    public func send(request: URLRequest) async throws {
+        _ = try await transport.send(request: request)
+    }
 }
 
 public struct HTTPMethod {
     static let get = "GET"
     static let post = "POST"
+    static let delete = "DELETE"
 }
 
 extension URLRequest {
@@ -95,6 +100,14 @@ extension URLRequest {
     public static var getTodos: URLRequest {
         var request = URLRequest(url: baseUrL.appendingPathComponent("todos"))
         request.httpMethod = HTTPMethod.get
+        return request
+    }
+
+    // DELETE /todo/{id}
+    public static func deleteTodo(id: Int) -> URLRequest {
+        let todo = baseUrL.appendingPathComponent("todos").appendingPathComponent("\(id)")
+        var request = URLRequest(url: todo)
+        request.httpMethod = HTTPMethod.delete
         return request
     }
 }
