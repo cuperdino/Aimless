@@ -57,7 +57,7 @@ struct AimlessApp: App {
 
         self.syncWrapper = SyncWrapper(
             apiClient: apiClient,
-            persistenceService:persistence,
+            persistenceService: persistence,
             dataImporter: dataImporter
         )
     }

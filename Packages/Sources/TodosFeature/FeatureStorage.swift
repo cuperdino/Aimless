@@ -10,6 +10,8 @@ import Combine
 import CoreData
 import Models
 
+// Wrapper around a NSFetchedResultsController which can be used
+// in combination with a view model, in order to fetch relevant items.
 class FeatureStorage<Entity: NSFetchRequestResult>: NSObject, NSFetchedResultsControllerDelegate {
     var models = CurrentValueSubject<[Entity], Never>([])
     private var fetchedResultsController: NSFetchedResultsController<Entity>
