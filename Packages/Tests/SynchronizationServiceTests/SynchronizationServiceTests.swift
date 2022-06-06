@@ -43,12 +43,10 @@ class SynchronizationServiceTests: XCTestCase {
 
     func testUpdateTodoSyncState() async throws {
         let context = persistenceService.backgroundContext
+        let unsyncedTodos = try await context.perform { try context.fetchUnscynedTodos() }
+        try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
+
         try await context.perform {
-            let unsyncedTodos = try context.fetchUnscynedTodos()
-            context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
-
-            try context.saveWithRollback()
-
             let allTodosRequest = TodoEntity.fetchRequest()
             let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
 
