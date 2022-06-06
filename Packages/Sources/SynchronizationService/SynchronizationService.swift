@@ -47,8 +47,8 @@ public class SynchronizationService {
         do {
             try await context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
             let response = try await syncUnsyncedWithRemote(todos: unsyncedTodos, context: context)
-            try await context.updateSyncState(on: unsyncedTodos, state: .synchronized)
             try await self.importTodos(context: context, todos: response.modelArray)
+            try await context.updateSyncState(on: unsyncedTodos, state: .synchronized)
         } catch {
             do {
                 try await context.updateSyncState(on: unsyncedTodos, state: .notSynchronized)
