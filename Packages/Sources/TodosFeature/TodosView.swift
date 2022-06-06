@@ -6,15 +6,35 @@
 //
 
 import SwiftUI
+import Models
 
-struct TodosView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+public struct TodosView: View {
+    @ObservedObject var viewModel: TodosViewModel
+
+    public init(viewModel: TodosViewModel) {
+        self.viewModel = viewModel
+    }
+
+    public var body: some View {
+        List {
+            ForEach(viewModel.todos, id: \.id) { todo in
+                HStack {
+                    Text(todo.title)
+                }
+            }
+        }
+        .toolbar {
+            EditButton()
+        }
+        .navigationTitle("Todos")
+        .navigationViewStyle(.columns)
     }
 }
 
 struct SwiftUIView_Previews: PreviewProvider {
     static var previews: some View {
-        TodosView()
+        NavigationView {
+            TodosView(viewModel: TodosViewModel())
+        }
     }
 }
