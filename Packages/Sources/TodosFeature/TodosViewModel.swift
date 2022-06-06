@@ -76,9 +76,8 @@ public class TodosViewModel: ObservableObject {
         for offset in offsets {
             let todo = todos[offset]
             persistenceService.viewContext.softDelete(todo: todo)
+            try? persistenceService.viewContext.saveWithRollback()
         }
-
-        try? persistenceService.viewContext.saveWithRollback()
     }
 
     func importTodosFromRemote() {
