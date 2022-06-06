@@ -27,7 +27,6 @@ public class TodoEntity: NSManagedObject {
     @NSManaged public var id: Int
     @NSManaged public var title: String
     @NSManaged public var userId: Int
-    @NSManaged public var user: UserEntity?
     @NSManaged public var synchronized: Int
     @NSManaged public var updatedAt: Date
     @NSManaged public var deletion: Int
