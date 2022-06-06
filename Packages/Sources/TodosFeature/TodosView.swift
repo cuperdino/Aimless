@@ -48,7 +48,7 @@ public struct TodosView: View {
                     Button {
                         self.isSheetPresented = !isSheetPresented
                     } label: {
-                        Text("Deletion history")
+                        Text("Recently deleted")
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -132,7 +132,7 @@ struct SheetView: View {
                     }
                 }
             }
-            .navigationTitle("Deletion history")
+            .navigationTitle("Recently deleted")
         }
     }
 }
