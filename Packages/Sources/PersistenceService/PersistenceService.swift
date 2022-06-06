@@ -62,6 +62,12 @@ extension NSManagedObjectContext {
         todo.deletionState = .deleted
     }
 
+    public func restoreDelete(todo: TodoEntity) {
+        todo.deletionState = .notDeleted
+        todo.updatedAt = Date.now
+        todo.deletedAt = nil
+    }
+
     func delete<T: NSManagedObject>(entity: T) {
         self.delete(entity)
         do {

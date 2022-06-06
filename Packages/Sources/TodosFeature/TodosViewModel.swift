@@ -69,6 +69,11 @@ public class TodosViewModel: ObservableObject {
         try? persistenceService.viewContext.saveWithRollback()
     }
 
+    func restoreDelete(todo: TodoEntity) {
+        persistenceService.viewContext.restoreDelete(todo: todo)
+        try? persistenceService.viewContext.saveWithRollback()
+    }
+
     func importTodosFromRemote() {
         Task {
             try? await self.dataImporter.importTodosFromRemote()
