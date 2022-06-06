@@ -121,7 +121,7 @@ class DataImporterServiceTests: XCTestCase {
     }
 
     private func getTodos() -> [Todo] {
-        return s[
+        return [
             Todo(userId: 1, id: 1, title: "Updated title", completed: false),
             Todo(userId: 2, id: 2, title: "Updated title", completed: true),
             Todo(userId: 3, id: 3, title: "Updated title", completed: false),
