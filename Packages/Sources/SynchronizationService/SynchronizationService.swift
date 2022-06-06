@@ -26,8 +26,11 @@ public class SynchronizationService {
 
     public func performSynchronization(context: NSManagedObjectContext) async throws {
         let unsyncedTodos: [TodoEntity] = try await context.perform {
+            // Fetch the ones that are not deleted
             try context.fetchUnscynedTodos()
         }
+
+        // Fetch the ones that should be deleted
         guard unsyncedTodos.count > 0 else { return }
         do {
             try await context.perform {

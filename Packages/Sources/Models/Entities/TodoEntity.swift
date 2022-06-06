@@ -9,6 +9,14 @@
 import Foundation
 import CoreData
 
+public enum SynchronizationState: Int {
+    case notSynchronized = 0, synchronizationPending, synchronized
+}
+
+public enum DeletionState: Int {
+    case notDeleted = 0, deletionPending, deleted
+}
+
 @objc(TodoEntity)
 public class TodoEntity: NSManagedObject {
     public class func fetchRequest() -> NSFetchRequest<TodoEntity> {
@@ -22,33 +30,27 @@ public class TodoEntity: NSManagedObject {
     @NSManaged public var user: UserEntity?
     @NSManaged public var synchronized: Int
     @NSManaged public var updatedAt: Date
+    @NSManaged public var deletion: Int
+    @NSManaged public var deletedAt: Date?
     
     public var synchronizationState: SynchronizationState {
         get {
             SynchronizationState(rawValue: synchronized) ?? .notSynchronized
         }
-
         set {
             synchronized = newValue.rawValue
         }
     }
 
-    public static func findOrCreate(id: Int, in context: NSManagedObjectContext) -> TodoEntity {
-        let request = TodoEntity.fetchRequest()
-
-        request.predicate = NSPredicate(
-            format: "%K == %d",
-            #keyPath(TodoEntity.id),
-            id
-        )
-
-        if let todo = try? context.fetch(request).first {
-            return todo
-        } else {
-            let todo = TodoEntity(context: context)
-            return todo
+    public var deletionState: DeletionState {
+        get {
+            DeletionState(rawValue: deletion) ?? .notDeleted
+        }
+        set {
+            deletion = newValue.rawValue
         }
     }
+
 }
 
 extension TodoEntity {
@@ -67,6 +69,23 @@ extension TodoEntity {
         )
         request.predicate = predicate
         return request
+    }
+
+    public static func findOrCreate(id: Int, in context: NSManagedObjectContext) -> TodoEntity {
+        let request = TodoEntity.fetchRequest()
+
+        request.predicate = NSPredicate(
+            format: "%K == %d",
+            #keyPath(TodoEntity.id),
+            id
+        )
+
+        if let todo = try? context.fetch(request).first {
+            return todo
+        } else {
+            let todo = TodoEntity(context: context)
+            return todo
+        }
     }
 
     public func updateFromTodo(todo: Todo, syncState: SynchronizationState) {
