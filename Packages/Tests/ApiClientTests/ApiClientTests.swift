@@ -88,22 +88,12 @@ final class ApiClientTests: XCTestCase {
         XCTAssertEqual(todosResponse.modelArray.count, 2)
     }
 
-    func testGetUsersRequest() async throws {
-        XCTAssertEqual(URLRequest.getUsers.url, URL(string: "https://jsonplaceholder.typicode.com/users"))
-        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
-    }
-
     func testGetTodosRequest() async throws {
         XCTAssertEqual(URLRequest.getTodos.url, URL(string: "https://jsonplaceholder.typicode.com/todos"))
         XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
     }
 
-    func testGetUserRequest() async throws {
-        XCTAssertEqual(URLRequest.getUser(id: 1).url, URL(string: "https://jsonplaceholder.typicode.com/users/1"))
-        XCTAssertEqual(URLRequest.getTodos.httpMethod, HTTPMethod.get)
-    }
-
-    func testPostUsersRequest() async throws {
+    func testPostTodosRequest() async throws {
         let todos = [Todo(userId: 1, id: 1, title: "delectus aut autem", completed: false)]
         let postTodoRequest = URLRequest.postTodos(todos: todos)
         let data = try JSONEncoder().encode(todos)

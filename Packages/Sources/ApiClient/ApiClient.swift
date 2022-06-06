@@ -72,27 +72,12 @@ public struct HTTPMethod {
 extension URLRequest {
     private static var baseUrL = URL(string: "https://jsonplaceholder.typicode.com")!
 
-    // GET /users
-    public static var getUsers: URLRequest {
-        var request = URLRequest(url: baseUrL.appendingPathComponent("users"))
-        request.httpMethod = HTTPMethod.get
-        return request
-    }
-
     // POST /todos
     public static func postTodos(todos: [Todo]) -> URLRequest {
         var request = URLRequest(url: baseUrL.appendingPathComponent("todos"))
         let body = try? JSONEncoder().encode(todos)
         request.httpBody = body
         request.httpMethod = HTTPMethod.post
-        return request
-    }
-
-    // GET /user/{id}
-    public static func getUser(id: Int) -> URLRequest {
-        let user = baseUrL.appendingPathComponent("users").appendingPathComponent("\(id)")
-        var request = URLRequest(url: user)
-        request.httpMethod = HTTPMethod.get
         return request
     }
 
