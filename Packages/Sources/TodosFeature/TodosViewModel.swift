@@ -69,6 +69,20 @@ public class TodosViewModel: ObservableObject {
         try? persistenceService.viewContext.saveWithRollback()
     }
 
+    func hardDeleteAll(todos: [TodoEntity]) {
+        for todo in todos {
+            persistenceService.viewContext.hardDelete(todo: todo)
+        }
+        try? persistenceService.viewContext.saveWithRollback()
+    }
+
+    func restoreAll(todos: [TodoEntity]) {
+        for todo in todos {
+            persistenceService.viewContext.restoreDelete(todo: todo)
+        }
+        try? persistenceService.viewContext.saveWithRollback()
+    }
+
     func restoreDelete(todo: TodoEntity) {
         persistenceService.viewContext.restoreDelete(todo: todo)
         try? persistenceService.viewContext.saveWithRollback()
