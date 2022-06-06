@@ -176,6 +176,12 @@ final class PersistenceServiceTests: XCTestCase {
             for todo in try! context.fetch(request) {
                 XCTAssertTrue(todo.deletionState == .deleted)
             }
+
+            context.restoreDelete(todo: todo!)
+            try context.saveWithRollback()
+            for todo in try! context.fetch(request) {
+                XCTAssertTrue(todo.deletionState == .notDeleted)
+            }
         }
     }
 
