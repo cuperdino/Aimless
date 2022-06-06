@@ -57,6 +57,30 @@ extension TodoEntity {
         request.sortDescriptors = [NSSortDescriptor(keyPath: \TodoEntity.updatedAt, ascending: false)]
         return request
     }()
+
+    public static var unsyncedFetchRequest: NSFetchRequest<TodoEntity> {
+        let request = NSFetchRequest<TodoEntity>(entityName: "TodoEntity")
+        let predicate = NSPredicate(
+            format: "%K == %d",
+            #keyPath(TodoEntity.synchronized),
+            SynchronizationState.notSynchronized.rawValue
+        )
+        request.predicate = predicate
+        return request
+    }
+
+    public func updateFromTodo(todo: Todo, syncState: SynchronizationState) {
+        self.userId = todo.userId
+        self.id = todo.id
+        self.title = todo.title
+        self.completed = todo.completed
+        self.synchronizationState = syncState
+        self.updatedAt = Date()
+    }
+
+    public var asTodo: Todo {
+        Todo(userId: userId, id: id, title: title, completed: completed)
+    }
 }
 
 
