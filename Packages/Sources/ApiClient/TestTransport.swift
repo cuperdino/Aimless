@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import ApiClient
 
 extension URLResponse {
     public static var success: HTTPURLResponse {

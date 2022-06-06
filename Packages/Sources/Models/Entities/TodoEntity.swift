@@ -96,6 +96,18 @@ extension TodoEntity {
         return request
     }
 
+    public static var deletionRequest: NSFetchRequest<TodoEntity> {
+        let request = NSFetchRequest<TodoEntity>(entityName: "TodoEntity")
+        let deletedPredicate = NSPredicate(
+            format: "%K == %d",
+            #keyPath(TodoEntity.deletion),
+            DeletionState.deleted.rawValue
+        )
+
+        request.predicate = deletedPredicate
+        return request
+    }
+
     public static func findOrCreate(id: Int, in context: NSManagedObjectContext) -> TodoEntity {
         let request = TodoEntity.fetchRequest()
 

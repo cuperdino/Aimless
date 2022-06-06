@@ -47,7 +47,7 @@ final class ApiClientTests: XCTestCase {
         """
         let responseData = Data(string.utf8)
 
-        let testTransport = TestTransport(responseData: responseData, urlResponse: .valid)
+        let testTransport = TestTransport(responseData: responseData, urlResponse: .success)
         let apiClient = ApiClient(transport: testTransport)
 
         let todos: [Todo] = try await apiClient.send(request: .getTodos)
@@ -76,7 +76,7 @@ final class ApiClientTests: XCTestCase {
         """
         let responseData = Data(string.utf8)
 
-        let testTransport = TestTransport(responseData: responseData, urlResponse: .valid)
+        let testTransport = TestTransport(responseData: responseData, urlResponse: .success)
         let apiClient = ApiClient(transport: testTransport)
 
         let todos = [
@@ -113,6 +113,13 @@ final class ApiClientTests: XCTestCase {
         XCTAssertEqual(postTodoRequest.httpMethod, HTTPMethod.post)
     }
 
+    func testDeleteTodoRequest() async throws {
+        let deleteTodoRequest = URLRequest.deleteTodo(id: 1)
+
+        XCTAssertEqual(deleteTodoRequest.url, URL(string: "https://jsonplaceholder.typicode.com/todos/1")!)
+        XCTAssertEqual(deleteTodoRequest.httpMethod, HTTPMethod.delete)
+    }
+
     private func testApiError(withStatusCode statusCode: Int) async throws -> Data {
         let request = URLRequest(url: URL(string: "testurl.com")!)
         let urlResponse = HTTPURLResponse(
@@ -129,30 +136,6 @@ final class ApiClientTests: XCTestCase {
             throw error
         }
     }
-
-    // MARK: Real network calls
-    // Sanity checks towards API over real network.
-    // Used to verify that the local models actually
-    // matches the ones on server.  This is for
-    // development only, and should be commented out
-    
-    /*
-    func testGetResponseParsingOverRealNetwork() async throws {
-        let apiClient = ApiClient()
-        let todos: [Todo] = try await apiClient.send(request: .getTodos)
-        print(todos)
-    }
-
-    func testPostArrayResponseParsingOverRealNetwork() async throws {
-        let apiClient = ApiClient()
-        let todosData = [
-            Todo(userId: 1, id: 1, title: "delectus aut autem", completed: false),
-            Todo(userId: 2, id: 2, title: "delectus aut autem", completed: true)
-        ]
-        let todosResponse: PostArrayResponse<Todo> = try await apiClient.send(request: .postTodos(todos: todosData))
-        print(todosResponse)
-    }
-     */
 }
 
 // Extension found at:

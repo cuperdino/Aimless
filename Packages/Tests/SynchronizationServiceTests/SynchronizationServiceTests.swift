@@ -85,7 +85,6 @@ class SynchronizationServiceTests: XCTestCase {
         )
 
         // Validate state before synchronization
-        // Validate state after synchronization
         try await context.perform {
             let allTodos = try context.fetch(TodoEntity.fetchRequest())
 
@@ -113,7 +112,7 @@ class SynchronizationServiceTests: XCTestCase {
         }
 
         // Perform synchronization
-        await synchronizationService.performSynchronization(context: context)
+        await synchronizationService._synchronization(context: context)
 
         // Validate state after synchronization
         try await context.perform {
@@ -184,7 +183,7 @@ class SynchronizationServiceTests: XCTestCase {
         }
 
         // Perform synchronization
-        try await synchronizationService.performSynchronization(context: context)
+        await synchronizationService._synchronization(context: context)
 
         // Validate state after synchronization
         try await context.perform {
@@ -201,6 +200,7 @@ class SynchronizationServiceTests: XCTestCase {
     private func setupUnsyncedTodoEntities() async {
         let context = persistenceService.backgroundContext
         try? await context.perform {
+            // Setup .notSynchronized todos
             for number in 1...4 {
                 let todoEntity = TodoEntity(context: context)
                 todoEntity.id = number
@@ -211,6 +211,7 @@ class SynchronizationServiceTests: XCTestCase {
                 todoEntity.userId = number
             }
 
+            // Setup .synchronized todos
             for number in 5...10 {
                 let todoEntity = TodoEntity(context: context)
                 todoEntity.id = number
