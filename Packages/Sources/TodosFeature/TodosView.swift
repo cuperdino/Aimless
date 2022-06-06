@@ -116,6 +116,22 @@ struct SheetView: View {
                     }
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        viewModel.hardDeleteAll(todos: viewModel.deletedTodos)
+                    } label: {
+                        Text("Delete all")
+                    }
+                }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        viewModel.restoreAll(todos: viewModel.deletedTodos)
+                    } label: {
+                        Text("Restore all")
+                    }
+                }
+            }
             .navigationTitle("Deletion history")
         }
     }
