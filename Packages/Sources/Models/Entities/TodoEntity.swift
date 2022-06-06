@@ -66,6 +66,18 @@ extension TodoEntity {
         return request
     }()
 
+    public static var sortedDeletionPendingPredicate: NSFetchRequest<TodoEntity> = {
+        let request = TodoEntity.fetchRequest()
+        let deletionPendingPredicated = NSPredicate(
+            format: "%K == %d",
+            #keyPath(TodoEntity.deletion),
+            DeletionState.deletionPending.rawValue
+        )
+        request.predicate = notDeletedPredicated
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \TodoEntity.deletedAt, ascending: false)]
+        return request
+    }()
+
     public static var unsyncedFetchRequest: NSFetchRequest<TodoEntity> {
         let request = NSFetchRequest<TodoEntity>(entityName: "TodoEntity")
         let unsyncedPredicated = NSPredicate(
