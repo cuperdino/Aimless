@@ -10,15 +10,18 @@ import ApiClient
 import Models
 import CoreData
 import PersistenceService
+import DataImporterService
 
 public class SynchronizationService {
 
     private let apiClient: ApiClient
     private let persistenceService: PersistenceService
+    private let dataImporter: DataImporterService
 
-    public init(apiClient: ApiClient, persistenceService: PersistenceService) {
+    public init(apiClient: ApiClient, persistenceService: PersistenceService, dataImporter: DataImporterService) {
         self.apiClient = apiClient
         self.persistenceService = persistenceService
+        self.dataImporter = dataImporter
     }
 
     public func performSynchronization(context: NSManagedObjectContext) async throws {
@@ -47,7 +50,10 @@ public class SynchronizationService {
             }
 
             try await context.perform {
-                context.importTodos(todos: response.modelArray)
+                self.dataImporter.importTodos(
+                    todos: response.modelArray,
+                    context: context
+                )
                 try context.saveWithRollback()
             }
         } catch {
@@ -69,53 +75,5 @@ extension NSManagedObjectContext {
         for todo in todos {
             todo.synchronizationState = state
         }
-    }
-
-    internal func importTodos(todos: [Todo]) {
-        for todo in todos {
-            let todoEntity = TodoEntity.findOrCreate(id: todo.id, in: self)
-            // If the objectID is temporary, it means it's a new object,
-            // not yet persisted to the store. Therefore it is safe to
-            // write to it.
-            //
-            // If the .synchronizationState == .synchronized, it means
-            // the object has no local changes to it, which means it is
-            // safe to write to it.
-            //
-            // Otherwise, it means that a local change has occured to the item,
-            // and that the item has not yet been synced to remote.
-            // Nothing should be done to it now, as it will automatically
-            // be synced to remote upon the next sync.
-            if todoEntity.objectID.isTemporaryID || todoEntity.synchronizationState == .synchronized {
-                todoEntity.updateFromTodo(todo: todo, syncState: .synchronized)
-            }
-        }
-    }
-}
-
-// MARK: Convinience extensions on TodoEntity used in SynchronizationService
-extension TodoEntity {
-    internal static var unsyncedFetchRequest: NSFetchRequest<TodoEntity> {
-        let request = NSFetchRequest<TodoEntity>(entityName: "TodoEntity")
-        let predicate = NSPredicate(
-            format: "%K == %d",
-            #keyPath(TodoEntity.synchronized),
-            SynchronizationState.notSynchronized.rawValue
-        )
-        request.predicate = predicate
-        return request
-    }
-
-    internal var asTodo: Todo {
-        Todo(userId: userId, id: id, title: title ?? "", completed: completed)
-    }
-
-    internal func updateFromTodo(todo: Todo, syncState: SynchronizationState) {
-        self.userId = todo.userId
-        self.id = todo.id
-        self.title = todo.title
-        self.completed = todo.completed
-        self.synchronizationState = syncState
-        self.updatedAt = Date()
     }
 }

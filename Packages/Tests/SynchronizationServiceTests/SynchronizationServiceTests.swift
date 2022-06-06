@@ -9,6 +9,7 @@ import XCTest
 @testable import Models
 import ApiClient
 import PersistenceService
+import DataImporterService
 @testable import SynchronizationService
 
 class SynchronizationServiceTests: XCTestCase {
@@ -68,40 +69,6 @@ class SynchronizationServiceTests: XCTestCase {
         }
     }
 
-    // Here we simulate that we have 4 unsynced and 6 synced Todos
-    // saved in the persistence. As local changes should trump
-    // remote changes the 'importTodos(:)' method should NOT overwrite the
-    // 4 unsynced changes. The remaining synced todos should be updated
-    // and that is simulated with the title being set to "Updated title".
-    func testImportTodosWithUnsyncedLocalChanges() async throws {
-        let context = persistenceService.backgroundContext
-
-        try await context.perform { [weak self] in
-            guard let self = self else { return }
-            context.importTodos(todos: self.todos)
-            let allTodosRequest = TodoEntity.fetchRequest()
-            let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
-
-            let allCount = try context.count(for: allTodosRequest)
-            let unsyncedCount = try context.count(for: unsyncedTodosRequest)
-
-            XCTAssertEqual(allCount, 10)
-            XCTAssertEqual(unsyncedCount, 4)
-
-            var synchronizedCount = 0
-
-            for todo in try! context.fetch(allTodosRequest) {
-                if todo.synchronizationState == .synchronized {
-                    synchronizedCount += 1
-                    XCTAssertEqual("Updated title", todo.title)
-                } else {
-                    XCTAssertEqual("Some title", todo.title)
-                }
-            }
-            XCTAssertEqual(synchronizedCount, 6)
-        }
-    }
-
     func testPerformSynchronization() async throws {
         // Setup
         let context = self.persistenceService.backgroundContext
@@ -110,9 +77,11 @@ class SynchronizationServiceTests: XCTestCase {
             urlResponse: .success
         )
         let apiClient = ApiClient(transport: testTransport)
+        let dataImporter = DataImporterService(apiClient: apiClient, persistenceService: persistenceService)
         let synchronizationService = SynchronizationService(
             apiClient: apiClient,
-            persistenceService: persistenceService
+            persistenceService: persistenceService,
+            dataImporter: dataImporter
         )
 
         // Validate state before synchronization
@@ -158,11 +127,9 @@ class SynchronizationServiceTests: XCTestCase {
                 if todo.synchronizationState == .synchronized {
                     syncedCount += 1
                 }
-
                 if todo.synchronizationState == .synchronizationPending {
                     syncPendingCount += 1
                 }
-
                 if todo.synchronizationState == .notSynchronized {
                     notSyncedCount += 1
                 }
@@ -187,9 +154,12 @@ class SynchronizationServiceTests: XCTestCase {
             urlResponse: .error
         )
         let apiClient = ApiClient(transport: testTransport)
+        let dataImporter = DataImporterService(apiClient: apiClient, persistenceService: persistenceService)
+
         let synchronizationService = SynchronizationService(
             apiClient: apiClient,
-            persistenceService: persistenceService
+            persistenceService: persistenceService,
+            dataImporter: dataImporter
         )
 
         try await context.perform {
