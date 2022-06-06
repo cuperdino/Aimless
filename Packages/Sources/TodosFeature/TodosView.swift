@@ -8,6 +8,19 @@
 import SwiftUI
 import Models
 
+extension SynchronizationState {
+    var view: some View {
+        switch self {
+        case .synchronized:
+            return Text("Synced").foregroundColor(.green)
+        case .notSynchronized:
+            return Text("Not synced").foregroundColor(.red)
+        case .synchronizationPending:
+            return Text("Sync pending...").foregroundColor(.yellow)
+        }
+    }
+}
+
 public struct TodosView: View {
     @ObservedObject var viewModel: TodosViewModel
 
@@ -21,7 +34,13 @@ public struct TodosView: View {
                 ForEach(viewModel.todos, id: \.id) { todo in
                     HStack {
                         Text(todo.title)
+                        Spacer()
+                        todo.synchronizationState.view
                     }
+                }
+                .onDelete { indexSet in
+                    print("About to delete a movie...")
+                    viewModel.deleteTodo(at: indexSet)
                 }
             }
             .toolbar {
