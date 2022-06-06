@@ -52,7 +52,7 @@ The synchronization strategy for deleted items is as follows:
 The code base is organised in local SPM modules, where each service and feature represents a distinct package. Apart from the obvious benefits, such as 
 seperation of concern and loose coupling, there is also an added benefit of reduced build times, as each package has its own target, which means you don't have to build the whole application when you are only working in a specific module. This is also great for fast build of SwiftUI previews.
 
-Each service is tested quite extensively. However because of time constraints, the view models are not, but they use code from the services which are tested. In order to achieve testing, I used dependency injection and some variation of the decorator pattern. 
+Each service is tested quite extensively. However because of time constraints, the view models are not, but they use code from the services which are tested. In order to achieve testing, I used patterns such as dependency injection and the decorator pattern, but I also tried to make sure that each function and class is as DRY and orthogonal as possible.
 
 For the persistence stack I used Core Data, where I created my own wrappers on top for convinience.
 
