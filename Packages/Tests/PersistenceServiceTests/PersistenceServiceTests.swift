@@ -30,6 +30,8 @@ final class PersistenceServiceTests: XCTestCase {
         verifyAttribute(named: "userId", on: todoEntity, hasType: .integer64, isOptional: false)
         verifyAttribute(named: "synchronized", on: todoEntity, hasType: .integer64, isOptional: false)
         verifyAttribute(named: "updatedAt", on: todoEntity, hasType: .date, isOptional: false)
+        verifyAttribute(named: "deletion", on: todoEntity, hasType: .integer64, isOptional: false)
+        verifyAttribute(named: "deletedAt", on: todoEntity, hasType: .date, isOptional: true)
 
         guard let userRelationship = todoEntity.relationshipsByName["user"] else {
             XCTFail("TodoEntity is missing expected relationship 'user'")
@@ -146,6 +148,30 @@ final class PersistenceServiceTests: XCTestCase {
 
             let countAfterDelete = try context.count(for: request)
             XCTAssertEqual(countAfterDelete, 0)
+        }
+    }
+
+    func testTodoDeletion() async throws {
+        let request = TodoEntity.fetchRequest()
+        let context = persistenceService.viewContext
+
+        try await context.perform {
+            let todo = context.save(TodoEntity.self) { todo in
+                todo.id = 1
+                todo.title = "A title"
+                todo.completed = false
+                todo.userId = 1
+                todo.synchronizationState = .notSynchronized
+                todo.updatedAt = Date()
+            }
+
+            context.softDelete(todo: todo!)
+            let softDeletedTodo = try context.fetch(request).first!
+            XCTAssertTrue(softDeletedTodo.deletionState == .deletionPending)
+
+            context.hardDelete(todo: todo!)
+            let hardDeletedTodo = try context.fetch(request).first!
+            XCTAssertTrue(hardDeletedTodo.deletionState == .deleted)
         }
     }
 

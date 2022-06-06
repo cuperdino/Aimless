@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import Models
 
 public class PersistenceService {
     public let container: PersistenceContainer
@@ -30,6 +31,11 @@ public class PersistenceService {
     }
 }
 
+protocol Deletable {
+    var deletion: Int { get set }
+    var deletedAt: Date { get set }
+}
+
 extension NSManagedObjectContext {
     @discardableResult
     public func save<T: NSManagedObject>(
@@ -44,6 +50,25 @@ extension NSManagedObjectContext {
         } catch {
             print(error)
             return nil
+        }
+    }
+
+    func softDelete(todo: TodoEntity) {
+        todo.deletionState = .deletionPending
+        todo.deletedAt = Date.now
+        do {
+            try self.saveWithRollback()
+        } catch {
+            print(error)
+        }
+    }
+
+    func hardDelete(todo: TodoEntity) {
+        todo.deletionState = .deleted
+        do {
+            try self.saveWithRollback()
+        } catch {
+            print(error)
         }
     }
 
