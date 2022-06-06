@@ -54,7 +54,7 @@ public class TodoEntity: NSManagedObject {
 extension TodoEntity {
     public static var sortedFetchRequest: NSFetchRequest<TodoEntity> = {
         let request = TodoEntity.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \TodoEntity.title, ascending: true)]
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \TodoEntity.updatedAt, ascending: false)]
         return request
     }()
 }

@@ -16,25 +16,53 @@ public struct TodosView: View {
     }
 
     public var body: some View {
-        List {
-            ForEach(viewModel.todos, id: \.id) { todo in
-                HStack {
-                    Text(todo.title)
+        ZStack(alignment: .bottom) {
+            List {
+                ForEach(viewModel.todos, id: \.id) { todo in
+                    HStack {
+                        Text(todo.title)
+                    }
                 }
             }
+            .toolbar {
+                EditButton()
+            }
+            VStack {
+                HStack {
+                    Button {
+                        viewModel.saveTodo()
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill").font(.title2)
+                            Text("Add Todo")
+                        }
+                    }
+                    Spacer()
+                    Button {
+                        viewModel.saveTodo()
+                    } label: {
+                        HStack {
+                            Text("Import from remote")
+                        }
+                    }
+                }
+                .padding(10)
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, minHeight: 60, maxHeight: 60)
+            .background()
         }
-        .toolbar {
-            EditButton()
-        }
+
         .navigationTitle("Todos")
         .navigationViewStyle(.columns)
     }
 }
 
-struct SwiftUIView_Previews: PreviewProvider {
+
+/*struct SwiftUIView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            TodosView(viewModel: TodosViewModel())
+            TodosView()
         }
     }
-}
+}*/
