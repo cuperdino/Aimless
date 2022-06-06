@@ -86,42 +86,25 @@ public class SynchronizationService {
         }
     }
 
+    // Only the permanently deleted todo items should be synchronized with remote.
+    // They are marked with the deletion state of 'DeletionState.deleted'
     internal func _deletionSynchronization(context: NSManagedObjectContext) async {
-        print("_deletionSynchronization started")
-        defer { print("_deletionSynchronization ended")}
-        let deletedTodoEntities: [TodoEntity] = await context.perform {
-            do {
-                return try context.fetchDeletedTodos()
-            } catch {
-                return []
-            }
-        }
+        let deletedTodoEntities = await context.getDeletedTodos()
         guard !deletedTodoEntities.isEmpty else { return }
-
         do {
-            let deletedTodos = await context.perform { deletedTodoEntities.map(\.asTodo) }
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                for todo in deletedTodos {
-                    group.addTask {
-                        try await self.apiClient.send(request: .deleteTodo(id: todo.id))
-                    }
-                }
-            }
-            try await context.perform {
-                for todo in deletedTodoEntities {
-                    context.delete(todo)
-                }
-                try context.saveWithRollback()
-            }
+            try await syncWithRemote(todos: deletedTodoEntities, context: context)
+            try await context.deleteLocally(todos: deletedTodoEntities)
         } catch {
-            await context.perform {
-                for todo in deletedTodoEntities {
-                    todo.deletionState = .deleted
-                }
-                do {
-                    try context.saveWithRollback()
-                } catch {
-                    print("Sync deletion error: \(error) occured, could not reset state")
+            await context.resetDeletedTodos(todos: deletedTodoEntities)
+        }
+    }
+
+    private func syncWithRemote(todos: [TodoEntity], context: NSManagedObjectContext) async throws {
+        let deletedTodos = await context.perform { todos.map(\.asTodo) }
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for todo in deletedTodos {
+                group.addTask {
+                    try await self.apiClient.send(request: .deleteTodo(id: todo.id))
                 }
             }
         }
@@ -141,6 +124,38 @@ extension NSManagedObjectContext {
     internal func updateSyncState(on todos: [TodoEntity], state: SynchronizationState) {
         for todo in todos {
             todo.synchronizationState = state
+        }
+    }
+
+    fileprivate func getDeletedTodos() async -> [TodoEntity] {
+        return await self.perform {
+            do {
+                return try self.fetchDeletedTodos()
+            } catch {
+                return []
+            }
+        }
+    }
+
+    fileprivate func deleteLocally(todos: [TodoEntity]) async throws {
+        try await self.perform {
+            for todo in todos {
+                self.delete(todo)
+            }
+            try self.saveWithRollback()
+        }
+    }
+
+    fileprivate func resetDeletedTodos(todos: [TodoEntity]) async {
+        await self.perform {
+            for todo in todos {
+                todo.deletionState = .deleted
+            }
+            do {
+                try self.saveWithRollback()
+            } catch {
+                print("Sync deletion error: \(error) occured, could not reset state")
+            }
         }
     }
 }
