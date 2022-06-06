@@ -74,11 +74,11 @@ public class TodosViewModel: ObservableObject {
 
     func deleteTodo(at offsets: IndexSet) {
         for offset in offsets {
-            let book = todos[offset]
-            persistenceService.viewContext.delete(book)
+            let todo = todos[offset]
+            persistenceService.viewContext.softDelete(todo: todo)
         }
 
-        try? persistenceService.viewContext.save()
+        try? persistenceService.viewContext.saveWithRollback()
     }
 
     func importTodosFromRemote() {

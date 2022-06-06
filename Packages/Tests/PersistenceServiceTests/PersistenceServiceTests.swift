@@ -166,10 +166,12 @@ final class PersistenceServiceTests: XCTestCase {
             }
 
             context.softDelete(todo: todo!)
+            try context.saveWithRollback()
             let softDeletedTodo = try context.fetch(request).first!
             XCTAssertTrue(softDeletedTodo.deletionState == .deletionPending)
 
             context.hardDelete(todo: todo!)
+            try context.saveWithRollback()
             let hardDeletedTodo = try context.fetch(request).first!
             XCTAssertTrue(hardDeletedTodo.deletionState == .deleted)
         }
