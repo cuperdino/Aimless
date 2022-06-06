@@ -12,51 +12,35 @@ import Models
 import Combine
 import CoreData
 
-class TodosFeatureStorage: NSObject {
-    var todos = CurrentValueSubject<[TodoEntity], Never>([])
-    private var fetchedResultsController: NSFetchedResultsController<TodoEntity>
-
-    init(context: NSManagedObjectContext) {
-        fetchedResultsController = NSFetchedResultsController(
-            fetchRequest: TodoEntity.sortedFetchRequest,
-            managedObjectContext: context,
-            sectionNameKeyPath: nil, cacheName: nil
-        )
-        super.init()
-        fetchedResultsController.delegate = self
-        do {
-            try fetchedResultsController.performFetch()
-            self.todos.value = fetchedResultsController.fetchedObjects ?? []
-        } catch {
-            print("Could not fetch todos")
-        }
-    }
-}
-
-extension TodosFeatureStorage: NSFetchedResultsControllerDelegate {
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        guard let todos = controller.fetchedObjects as? [TodoEntity] else {
-            return
-        }
-        self.todos.value = todos
-    }
-}
-
 public class TodosViewModel: ObservableObject {
     let persistenceService: PersistenceService
     let dataImporter: DataImporterService
-    let todosStorage: TodosFeatureStorage
+    let todosStorage: FeatureStorage<TodoEntity>
+    let deletedTodosStorage: FeatureStorage<TodoEntity>
     var cancellables = [AnyCancellable]()
 
     @Published var todos: [TodoEntity] = []
+    @Published var deletedTodos: [TodoEntity] = []
 
     public init(persistenceService: PersistenceService, dataImporter: DataImporterService) {
         self.persistenceService = persistenceService
         self.dataImporter = dataImporter
-        self.todosStorage = TodosFeatureStorage(context: persistenceService.viewContext)
+        self.todosStorage = FeatureStorage(
+            context: persistenceService.viewContext,
+            fetchRequest: TodoEntity.sortedFetchRequest
+        )
 
-        self.todosStorage.todos.sink { todos in
+        self.deletedTodosStorage = FeatureStorage(
+            context: persistenceService.viewContext,
+            fetchRequest: TodoEntity.sortedDeletionPendingRequest
+        )
+
+        self.todosStorage.models.sink { todos in
             self.todos = todos
+        }.store(in: &cancellables)
+
+        self.deletedTodosStorage.models.sink { deletedTodos in
+            self.deletedTodos = deletedTodos
         }.store(in: &cancellables)
     }
 
@@ -72,12 +56,17 @@ public class TodosViewModel: ObservableObject {
         }
     }
 
-    func deleteTodo(at offsets: IndexSet) {
+    func softDelete(at offsets: IndexSet) {
         for offset in offsets {
             let todo = todos[offset]
             persistenceService.viewContext.softDelete(todo: todo)
             try? persistenceService.viewContext.saveWithRollback()
         }
+    }
+
+    func hardDelete(todo: TodoEntity) {
+        persistenceService.viewContext.hardDelete(todo: todo)
+        try? persistenceService.viewContext.saveWithRollback()
     }
 
     func importTodosFromRemote() {
