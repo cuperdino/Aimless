@@ -113,7 +113,7 @@ class SynchronizationServiceTests: XCTestCase {
         }
 
         // Perform synchronization
-        try await synchronizationService.performSynchronization(context: context)
+        await synchronizationService.performSynchronization(context: context)
 
         // Validate state after synchronization
         try await context.perform {

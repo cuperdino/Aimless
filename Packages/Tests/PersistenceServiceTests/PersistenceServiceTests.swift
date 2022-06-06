@@ -155,7 +155,7 @@ final class PersistenceServiceTests: XCTestCase {
         let request = TodoEntity.fetchRequest()
         let context = persistenceService.viewContext
 
-        try await context.perform {
+        await context.perform {
             let todo = context.save(TodoEntity.self) { todo in
                 todo.id = 1
                 todo.title = "A title"
@@ -166,19 +166,19 @@ final class PersistenceServiceTests: XCTestCase {
             }
 
             context.softDelete(todo: todo!)
-            try context.saveWithRollback()
+            context.saveWithRollback()
             for todo in try! context.fetch(request) {
                 XCTAssertTrue(todo.deletionState == .deletionPending)
             }
 
             context.hardDelete(todo: todo!)
-            try context.saveWithRollback()
+            context.saveWithRollback()
             for todo in try! context.fetch(request) {
                 XCTAssertTrue(todo.deletionState == .deleted)
             }
 
             context.restoreDelete(todo: todo!)
-            try context.saveWithRollback()
+            context.saveWithRollback()
             for todo in try! context.fetch(request) {
                 XCTAssertTrue(todo.deletionState == .notDeleted)
             }
@@ -191,7 +191,7 @@ final class PersistenceServiceTests: XCTestCase {
             let todo1 = TodoEntity(context: context)
             todo1.title = ""
             // Perform a save without assigning non-optional values
-            try? context.save()
+            context.saveWithRollback()
             // As we have not rolled back, there are items
             // in the insertedObjects of the context
             XCTAssertFalse(context.insertedObjects.isEmpty)
@@ -199,7 +199,7 @@ final class PersistenceServiceTests: XCTestCase {
             let todo2 = TodoEntity(context: context)
             todo2.title = ""
             // Perform a save without assigning non-optional values
-            try? context.saveWithRollback()
+            context.saveWithRollback()
             // As we have rolled back, there should not be
             // any elements in the insertedObjects of the context
             XCTAssertTrue(context.insertedObjects.isEmpty)
@@ -220,7 +220,7 @@ final class PersistenceServiceTests: XCTestCase {
             }
 
             context.softDelete(todo: todo!)
-            try context.saveWithRollback()
+            context.saveWithRollback()
 
             context.save(TodoEntity.self) { todo in
                 todo.id = 2

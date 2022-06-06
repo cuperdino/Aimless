@@ -24,18 +24,20 @@ public class SynchronizationService {
         self.dataImporter = dataImporter
     }
 
-    public func performSynchronization(context: NSManagedObjectContext) async throws {
-        let unsyncedTodos: [TodoEntity] = try await context.perform {
-            // Fetch the ones that are not deleted
-            try context.fetchUnscynedTodos()
+    public func performSynchronization(context: NSManagedObjectContext) async {
+        let unsyncedTodos: [TodoEntity] = await context.perform {
+            do {
+                return try context.fetchUnscynedTodos()
+            } catch {
+                return []
+            }
         }
 
-        // Fetch the ones that should be deleted
         guard unsyncedTodos.count > 0 else { return }
         do {
-            try await context.perform {
+            await context.perform {
                 context.updateSyncState(on: unsyncedTodos, state: .synchronizationPending)
-                try context.saveWithRollback()
+                context.saveWithRollback()
             }
             // Sync to remote, and update local state from remote,
             // in case merges happened on the server when posting.
@@ -47,22 +49,22 @@ public class SynchronizationService {
                 request: .postTodos(todos: context.perform { unsyncedTodos.map(\.asTodo) } )
             )
 
-            try await context.perform {
+            await context.perform {
                 context.updateSyncState(on: unsyncedTodos, state: .synchronized)
-                try context.saveWithRollback()
+                context.saveWithRollback()
             }
 
-            try await context.perform {
+            await context.perform {
                 self.dataImporter.importTodos(
                     todos: response.modelArray,
                     context: context
                 )
-                try context.saveWithRollback()
+                context.saveWithRollback()
             }
         } catch {
-            try await context.perform {
+            await context.perform {
                 context.updateSyncState(on: unsyncedTodos, state: .notSynchronized)
-                try context.saveWithRollback()
+                context.saveWithRollback()
             }
         }
     }
@@ -72,6 +74,10 @@ public class SynchronizationService {
 extension NSManagedObjectContext {
     internal func fetchUnscynedTodos() throws -> [TodoEntity] {
         return try self.fetch(TodoEntity.unsyncedFetchRequest)
+    }
+
+    internal func fetchDeletedTodos() throws -> [TodoEntity] {
+        return try self.fetch(TodoEntity.deletionRequest)
     }
 
     internal func updateSyncState(on todos: [TodoEntity], state: SynchronizationState) {
