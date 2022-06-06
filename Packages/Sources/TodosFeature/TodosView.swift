@@ -43,6 +43,7 @@ public struct TodosView: View {
                     viewModel.softDelete(at: indexSet)
                 }
             }
+            .padding(.bottom, 60)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
