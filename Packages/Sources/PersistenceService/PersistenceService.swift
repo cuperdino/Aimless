@@ -68,15 +68,6 @@ extension NSManagedObjectContext {
         todo.deletedAt = nil
     }
 
-    func delete<T: NSManagedObject>(entity: T) {
-        self.delete(entity)
-        do {
-            try self.saveWithRollback()
-        } catch {
-            print(error)
-        }
-    }
-
     public func saveWithRollback() throws {
         do {
             try self.save()

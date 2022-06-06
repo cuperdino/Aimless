@@ -32,30 +32,6 @@ final class PersistenceServiceTests: XCTestCase {
         verifyAttribute(named: "updatedAt", on: todoEntity, hasType: .date, isOptional: false)
         verifyAttribute(named: "deletion", on: todoEntity, hasType: .integer64, isOptional: false)
         verifyAttribute(named: "deletedAt", on: todoEntity, hasType: .date, isOptional: true)
-
-        guard let userRelationship = todoEntity.relationshipsByName["user"] else {
-            XCTFail("TodoEntity is missing expected relationship 'user'")
-            return
-        }
-        XCTAssertFalse(userRelationship.isToMany)
-        let userEntity = persistenceService.container.managedObjectModel.entitiesByName["UserEntity"]!
-        XCTAssertEqual(userEntity, userRelationship.destinationEntity)
-    }
-
-    func testUserEntity() {
-        let userEntity = persistenceService.container.managedObjectModel.entitiesByName["UserEntity"]!
-        verifyAttribute(named: "email", on: userEntity, hasType: .string, isOptional: false)
-        verifyAttribute(named: "id", on: userEntity, hasType: .integer64, isOptional: false)
-        verifyAttribute(named: "name", on: userEntity, hasType: .string, isOptional: false)
-        verifyAttribute(named: "username", on: userEntity, hasType: .string, isOptional: false)
-
-        guard let todoRelationShip = userEntity.relationshipsByName["todos"] else {
-            XCTFail("UserEntity is missing expected relationship 'todos'")
-            return
-        }
-        XCTAssertTrue(todoRelationShip.isToMany)
-        let todoEntity = persistenceService.container.managedObjectModel.entitiesByName["TodoEntity"]!
-        XCTAssertEqual(todoEntity, todoRelationShip.destinationEntity)
     }
 
     func verifyAttribute(
@@ -93,69 +69,11 @@ final class PersistenceServiceTests: XCTestCase {
         }
     }
 
-    func testSaveWithRelationShips() async throws {
-        let todoRequest = TodoEntity.fetchRequest()
-        let userRequest = UserEntity.fetchRequest()
-        let viewContext = persistenceService.viewContext
-
-        try await viewContext.perform {
-            let todo = viewContext.save(TodoEntity.self) { todo in
-                todo.id = 1
-                todo.title = "A title"
-                todo.completed = false
-                todo.userId = 1
-                todo.synchronizationState = .notSynchronized
-                todo.updatedAt = Date()
-            }
-            guard let todo = todo else { return }
-
-            viewContext.save(UserEntity.self) { user in
-                user.id = 1
-                user.name = "Dino"
-                user.email = "test@email.com"
-                user.username = "cuperdino"
-                user.addToTodos(todo)
-            }
-
-            let todoToAssert = try viewContext.fetch(todoRequest).first!
-            let user = try viewContext.fetch(userRequest).first!
-            let userTodo = user.todos?.allObjects.first as? TodoEntity
-
-            XCTAssertEqual(todoToAssert.user, user)
-            XCTAssertEqual(userTodo, todo)
-        }
-    }
-
-    func testDelete() async throws {
-        let request = UserEntity.fetchRequest()
-        let context = persistenceService.viewContext
-
-        await context.perform {
-            _ = context.save(UserEntity.self) { user in
-                user.id = 1
-                user.name = "name"
-                user.username = "username"
-                user.email = "email@email.com"
-            }
-        }
-
-        try await context.perform {
-            let countBeforeDelete = try context.count(for: request)
-            XCTAssertEqual(countBeforeDelete, 1)
-
-            let user = try context.fetch(request).first!
-            context.delete(entity: user)
-
-            let countAfterDelete = try context.count(for: request)
-            XCTAssertEqual(countAfterDelete, 0)
-        }
-    }
-
     func testTodoDeletion() async throws {
         let request = TodoEntity.fetchRequest()
         let context = persistenceService.viewContext
 
-        await context.perform {
+        try await context.perform {
             let todo = context.save(TodoEntity.self) { todo in
                 todo.id = 1
                 todo.title = "A title"
@@ -166,19 +84,19 @@ final class PersistenceServiceTests: XCTestCase {
             }
 
             context.softDelete(todo: todo!)
-            context.saveWithRollback()
+            try context.saveWithRollback()
             for todo in try! context.fetch(request) {
                 XCTAssertTrue(todo.deletionState == .deletionPending)
             }
 
             context.hardDelete(todo: todo!)
-            context.saveWithRollback()
+            try context.saveWithRollback()
             for todo in try! context.fetch(request) {
                 XCTAssertTrue(todo.deletionState == .deleted)
             }
 
             context.restoreDelete(todo: todo!)
-            context.saveWithRollback()
+            try context.saveWithRollback()
             for todo in try! context.fetch(request) {
                 XCTAssertTrue(todo.deletionState == .notDeleted)
             }
@@ -191,7 +109,7 @@ final class PersistenceServiceTests: XCTestCase {
             let todo1 = TodoEntity(context: context)
             todo1.title = ""
             // Perform a save without assigning non-optional values
-            context.saveWithRollback()
+            try? context.save()
             // As we have not rolled back, there are items
             // in the insertedObjects of the context
             XCTAssertFalse(context.insertedObjects.isEmpty)
@@ -199,7 +117,7 @@ final class PersistenceServiceTests: XCTestCase {
             let todo2 = TodoEntity(context: context)
             todo2.title = ""
             // Perform a save without assigning non-optional values
-            context.saveWithRollback()
+            try? context.saveWithRollback()
             // As we have rolled back, there should not be
             // any elements in the insertedObjects of the context
             XCTAssertTrue(context.insertedObjects.isEmpty)
@@ -220,7 +138,7 @@ final class PersistenceServiceTests: XCTestCase {
             }
 
             context.softDelete(todo: todo!)
-            context.saveWithRollback()
+            try context.saveWithRollback()
 
             context.save(TodoEntity.self) { todo in
                 todo.id = 2
