@@ -23,6 +23,7 @@ extension SynchronizationState {
 
 public struct TodosView: View {
     @ObservedObject var viewModel: TodosViewModel
+    @State var isSheetPresented = false
 
     public init(viewModel: TodosViewModel) {
         self.viewModel = viewModel
@@ -39,12 +40,20 @@ public struct TodosView: View {
                     }
                 }
                 .onDelete { indexSet in
-                    print("About to delete a movie...")
-                    viewModel.deleteTodo(at: indexSet)
+                    viewModel.softDelete(at: indexSet)
                 }
             }
             .toolbar {
-                EditButton()
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        self.isSheetPresented = !isSheetPresented
+                    } label: {
+                        Text("Deletion history")
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    EditButton()
+                }
             }
             VStack {
                 HStack {
@@ -71,9 +80,44 @@ public struct TodosView: View {
             .frame(maxWidth: .infinity, minHeight: 60, maxHeight: 60)
             .background()
         }
-
+        .sheet(
+            isPresented: $isSheetPresented) {
+                SheetView(viewModel: viewModel)
+            }
         .navigationTitle("Todos")
         .navigationViewStyle(.columns)
+    }
+}
+
+struct SheetView: View {
+    @ObservedObject var viewModel: TodosViewModel
+
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(viewModel.deletedTodos, id: \.id) { todo in
+                    HStack {
+                        Text(todo.title)
+                        Spacer()
+                        todo.synchronizationState.view
+                    }
+                    .swipeActions(allowsFullSwipe: false) {
+                        Button {
+
+                        } label: {
+                            Label("Restore", systemImage: "arrow.3.trianglepath")
+                        }
+                        .tint(.indigo)
+                        Button(role: .destructive) {
+                            viewModel.hardDelete(todo: todo)
+                        } label: {
+                            Label("Delete", systemImage: "trash.fill")
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Deletion history")
+        }
     }
 }
 
