@@ -197,4 +197,48 @@ final class PersistenceServiceTests: XCTestCase {
             XCTAssertTrue(context.insertedObjects.isEmpty)
         }
     }
+
+    func testUnsyncedFetchRequest() async throws {
+        let context = persistenceService.viewContext
+
+        try await context.perform {
+            let todo = context.save(TodoEntity.self) { todo in
+                todo.id = 1
+                todo.title = "A title"
+                todo.completed = false
+                todo.userId = 1
+                todo.synchronizationState = .notSynchronized
+                todo.updatedAt = Date()
+            }
+
+            context.softDelete(todo: todo!)
+            try context.saveWithRollback()
+
+            context.save(TodoEntity.self) { todo in
+                todo.id = 2
+                todo.title = "Another title"
+                todo.completed = false
+                todo.userId = 2
+                todo.synchronizationState = .notSynchronized
+                todo.updatedAt = Date()
+            }
+
+            context.save(TodoEntity.self) { todo in
+                todo.id = 3
+                todo.title = "Another title"
+                todo.completed = false
+                todo.userId = 3
+                todo.synchronizationState = .notSynchronized
+                todo.updatedAt = Date()
+            }
+
+            let unsyncedFetchRequest = TodoEntity.unsyncedFetchRequest
+            let todos = try context.fetch(unsyncedFetchRequest)
+            XCTAssertEqual(todos.count, 2)
+
+            for todo in todos {
+                XCTAssertTrue(todo.deletionState == .notDeleted)
+            }
+        }
+    }
 }

@@ -62,12 +62,19 @@ extension TodoEntity {
 
     public static var unsyncedFetchRequest: NSFetchRequest<TodoEntity> {
         let request = NSFetchRequest<TodoEntity>(entityName: "TodoEntity")
-        let predicate = NSPredicate(
+        let unsyncedPredicated = NSPredicate(
             format: "%K == %d",
             #keyPath(TodoEntity.synchronized),
             SynchronizationState.notSynchronized.rawValue
         )
-        request.predicate = predicate
+
+        let notDeletedPredicated = NSPredicate(
+            format: "%K == %d",
+            #keyPath(TodoEntity.deletion),
+            DeletionState.notDeleted.rawValue
+        )
+        let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [unsyncedPredicated, notDeletedPredicated])
+        request.predicate = compoundPredicate
         return request
     }
 
