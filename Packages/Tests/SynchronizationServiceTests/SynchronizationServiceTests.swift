@@ -93,9 +93,9 @@ class SynchronizationServiceTests: XCTestCase {
             for todo in try! context.fetch(allTodosRequest) {
                 if todo.synchronizationState == .synchronized {
                     synchronizedCount += 1
-                    XCTAssertEqual("Updated title", todo.title!)
+                    XCTAssertEqual("Updated title", todo.title)
                 } else {
-                    XCTAssertEqual("Some title", todo.title!)
+                    XCTAssertEqual("Some title", todo.title)
                 }
             }
             XCTAssertEqual(synchronizedCount, 6)
@@ -116,14 +116,31 @@ class SynchronizationServiceTests: XCTestCase {
         )
 
         // Validate state before synchronization
+        // Validate state after synchronization
         try await context.perform {
-            let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
-            let allTodosRequest = TodoEntity.fetchRequest()
-            let unsyncedTodosCount = try context.count(for: unsyncedTodosRequest)
-            let allTodosCount = try context.count(for: allTodosRequest)
+            let allTodos = try context.fetch(TodoEntity.fetchRequest())
 
-            XCTAssertEqual(allTodosCount, 10)
-            XCTAssertEqual(unsyncedTodosCount, 4)
+            var syncedCount = 0
+            var notSyncedCount = 0
+            var syncPendingCount = 0
+
+            for todo in allTodos {
+                if todo.synchronizationState == .synchronized {
+                    syncedCount += 1
+                }
+
+                if todo.synchronizationState == .synchronizationPending {
+                    syncPendingCount += 1
+                }
+
+                if todo.synchronizationState == .notSynchronized {
+                    notSyncedCount += 1
+                }
+            }
+
+            XCTAssertEqual(notSyncedCount, 4)
+            XCTAssertEqual(syncPendingCount, 0)
+            XCTAssertEqual(syncedCount, 6)
         }
 
         // Perform synchronization
@@ -131,13 +148,29 @@ class SynchronizationServiceTests: XCTestCase {
 
         // Validate state after synchronization
         try await context.perform {
-            let unsyncedTodosRequest = TodoEntity.unsyncedFetchRequest
-            let allTodosRequest = TodoEntity.fetchRequest()
-            let unsyncedTodosCount = try context.count(for: unsyncedTodosRequest)
-            let allTodosCount = try context.count(for: allTodosRequest)
+            let allTodos = try context.fetch(TodoEntity.fetchRequest())
 
-            XCTAssertEqual(allTodosCount, 10)
-            XCTAssertEqual(unsyncedTodosCount, 0)
+            var syncedCount = 0
+            var notSyncedCount = 0
+            var syncPendingCount = 0
+
+            for todo in allTodos {
+                if todo.synchronizationState == .synchronized {
+                    syncedCount += 1
+                }
+
+                if todo.synchronizationState == .synchronizationPending {
+                    syncPendingCount += 1
+                }
+
+                if todo.synchronizationState == .notSynchronized {
+                    notSyncedCount += 1
+                }
+            }
+
+            XCTAssertEqual(notSyncedCount, 0)
+            XCTAssertEqual(syncPendingCount, 0)
+            XCTAssertEqual(syncedCount, 10)
         }
     }
 
