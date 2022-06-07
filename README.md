@@ -3,7 +3,7 @@
 The name Aimless is simply because I didn't have a particular aim when I started coding this app. 
 
 ## TL;DR
-This is an iOS app demonstrating an offline first approach, with a remote synchronization strategy. 
+This is an iOS app demonstrating an offline first approach, with a remote synchronization strategy. The local changes trump remote changes, and are considered the 'source of truth'.
 
 ## Overview
 This readme covers the following:
@@ -26,6 +26,8 @@ Before talking about the synchronization strategy, it is againg worth mentioning
 2. `synchronizationPending`
 3. `synchronized`
 
+The local changes should trump remote changes, and therefore all local changes are first synchronized to the remote server, before the server data is imported to the device. The more specific synchronization steps are listed below.
+
 ### The strategy:
 1. Fetch all unsynced local change.
 2. Update sync state of unsynced changes to `synchronizationPending`.
@@ -36,13 +38,17 @@ Before talking about the synchronization strategy, it is againg worth mentioning
 
 There are some checks happening when importing data from the server, which will not allow for overwriting of local todos with remote changes, if the local ones are not synchronized. Additionally, I only consider items whose deletion status is `notDeleted` (see next section for more info), all other items are not a part of this synchronization process.
 
+Additionally, this synchronization mechanism assumes that the server handles merge conflicts that might occur when performing a POST request to the remote server.
+
 ## Synchronization of deleted items
 With regards to deletions, there is a seperate synchronization happening. Each item can be in three different deletion states:
 1. `notDeleted`
 2. `deletionPending`
 3. `deleted`
 
-The first state, `notDeleted`, is self-explanitory. The item is not deleted, and is a 'regular' item. This item can change its state to a `deletionPending` item if a user performs a delete action on it. The `deletionPending` state is when an item is temporary deleted and moved to the 'Recently deleted' screen. On this screen, the item can either be restored, which will set its state back to `notDeleted` or permanently deleted, which will set its state to `deleted`. When the state is `deleted` the item will be permanently deleted in the next sync cycle.
+The first state, `notDeleted`, is self-explanitory. The item is not deleted, and is a 'regular' item. This item can change its state to a `deletionPending` item if a user performs a delete action on it. The `deletionPending` state is when an item is temporary deleted and moved to the 'Recently deleted' screen. On this screen, the item can either be restored, which will set its state back to `notDeleted` or permanently deleted, which will set its state to `deleted`. When the state is `deleted` the item will be permanently deleted in the next sync cycle. 
+
+Note, that since the server is a test server, the item is not actually deleted there, and might re-appear if you were to import the data from remote.
 
 ### The strategy:
 The synchronization strategy for deleted items is as follows:
