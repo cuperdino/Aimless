@@ -48,7 +48,7 @@ With regards to deletions, there is a seperate synchronization happening. Each i
 
 The first state, `notDeleted`, is self-explanitory. The item is not deleted, and is a 'regular' item. This item can change its state to a `deletionPending` item if a user performs a delete action on it. The `deletionPending` state is when an item is temporary deleted and moved to the 'Recently deleted' screen. On this screen, the item can either be restored, which will set its state back to `notDeleted` or permanently deleted, which will set its state to `deleted`. When the state is `deleted` the item will be permanently deleted in the next sync cycle. 
 
-Note, that since the server is a test server, the item is not actually deleted there, and might re-appear if you were to import the data from remote.
+Note that since the server is a test server, the item is not actually deleted there, and might re-appear if you were to import the data from remote. Moreover, with the current setup, there isn't a way to synchronize deletions between devices, as the test server doesn't support this. So do take this deletion synchronization with a grain of salt.
 
 ### The strategy:
 The synchronization strategy for deleted items is as follows:
