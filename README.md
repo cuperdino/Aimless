@@ -7,11 +7,20 @@ This is an iOS app demonstrating an offline first approach, with a remote synchr
 
 ## Overview
 This readme covers the following:
+- Prerequisites
+- Installation
 - Features
 - Synchronization
 - Synchronization of deleted items
 - Arhitecture, patterns and technologies
 - Additional thoughts
+
+## Prerequisites
+- Xcode 13.4.x
+- macOS 11.3 or later
+
+## Installation
+Clone the repo and build the project 😄
 
 ## Features
 The app itself presents different todos, which can be created locally, or fetched from remote. Each todo item displays its current synchronization status, which can either be `notSynchronized`, `synchronizationPending` or `synchronized`. The todos can be deleted, and are subsequently moved to a 'Recently deleted' screen. On this screen they can either be permanently deleted or restored again. 
